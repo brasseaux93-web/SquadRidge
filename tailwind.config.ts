@@ -9,27 +9,52 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        deep: "var(--bg-deep)",
-        surface: "var(--bg-surface)",
-        elevated: "var(--bg-elevated)",
+        canvas: "var(--canvas)",
+        surface: "var(--surface)",
+        raised: "var(--surface-raised)",
+        deep: "var(--canvas)",
+        elevated: "var(--surface-raised)",
         accent: {
-          DEFAULT: "var(--accent)",
+          DEFAULT: "var(--signal-active)",
           hover: "var(--accent-hover)",
-          muted: "var(--accent-muted)",
+          muted: "var(--signal-active-muted)",
         },
         ink: {
-          DEFAULT: "var(--text-primary)",
-          muted: "var(--text-muted)",
-          inverse: "var(--text-inverse)",
+          DEFAULT: "var(--ink)",
+          secondary: "var(--ink-secondary)",
+          muted: "var(--ink-secondary)",
+          quiet: "var(--ink-quiet)",
+          inverse: "var(--ink-inverse)",
         },
-        danger: "var(--danger)",
-        warning: "var(--warning)",
-        success: "var(--success)",
+        private: {
+          DEFAULT: "var(--signal-private)",
+          muted: "var(--signal-private-muted)",
+        },
+        progress: {
+          DEFAULT: "var(--signal-progress)",
+          muted: "var(--signal-progress-muted)",
+        },
+        attention: {
+          DEFAULT: "var(--signal-attention)",
+          muted: "var(--signal-attention-muted)",
+        },
+        critical: {
+          DEFAULT: "var(--signal-critical)",
+          muted: "var(--signal-critical-muted)",
+        },
+        consented: {
+          DEFAULT: "var(--signal-consented)",
+          muted: "var(--signal-consented-muted)",
+        },
+        danger: "var(--signal-critical)",
+        warning: "var(--signal-attention)",
+        success: "var(--signal-progress)",
       },
       fontFamily: {
-        serif: ["var(--font-serif)", "Georgia", "serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
+        serif: ["var(--font-display)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        mono: ["ui-monospace", "SFMono-Regular", "monospace"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         sm: "var(--radius-sm)",
@@ -43,11 +68,17 @@ const config: Config = {
         focus: "var(--shadow-focus)",
       },
       maxWidth: {
-        container: "1200px",
-        prose: "65ch",
+        container: "1120px",
+        prose: "62ch",
       },
       transitionTimingFunction: {
-        out: "cubic-bezier(0.16, 1, 0.3, 1)",
+        out: "var(--ease-out)",
+      },
+      transitionDuration: {
+        instant: "var(--duration-instant)",
+        short: "var(--duration-short)",
+        medium: "var(--duration-medium)",
+        deliberate: "var(--duration-deliberate)",
       },
     },
   },
