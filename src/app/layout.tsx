@@ -3,9 +3,18 @@ import { DemoBanner } from "@/components/layout/DemoBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SquadRidge — Private rooms for facilitated dialogue",
+  title: {
+    default: "SquadRidge",
+    template: "%s · SquadRidge",
+  },
   description:
-    "A facilitator-led digital space for sensitive conversations. Approved commitments carry forward; live dialogue does not become a permanent transcript.",
+    "A private, facilitator-led space for difficult conversations—and a clear path to the commitments people choose to keep.",
+  openGraph: {
+    title: "SquadRidge",
+    description:
+      "Difficult conversations deserve better infrastructure. Private rooms, structured dialogue, approved commitments only.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

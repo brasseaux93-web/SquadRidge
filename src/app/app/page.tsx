@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Card } from "@/components/ui/Card";
-import { PrivacyLabel } from "@/components/ui/PrivacyLabel";
 import { RoomStatusMarker } from "@/components/ui/StatusMarker";
 import { useAppStore } from "@/data/store";
 import { formatDate } from "@/lib/utils";
@@ -15,15 +13,15 @@ export default function FacilitatorHome() {
 
   if (user?.role === "participant" || user?.role === "observer") {
     return (
-      <Card>
-        <p className="text-ink-secondary">
-          You are signed in as a participant.{" "}
+      <div className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-6">
+        <p className="text-[15px] text-ink-secondary">
+          You entered as a participant.{" "}
           <Link href="/room/room-1" className="text-accent hover:underline">
-            Open the live demo room
+            Open the live room
           </Link>
           .
         </p>
-      </Card>
+      </div>
     );
   }
 
@@ -31,30 +29,35 @@ export default function FacilitatorHome() {
   const liveCount = rooms.filter((r) => r.status === "live").length;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-tight text-ink">Workspace</h1>
-          <p className="mt-2 max-w-prose text-ink-secondary">
-            Facilitator briefing. Open a room to guide phases, review proposed
-            commitments, and close the session when outcomes are ready.
+          <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-quiet">
+            Facilitator workspace
+          </p>
+          <h1 className="mt-2 font-display text-[2rem] tracking-tight text-ink sm:text-[2.25rem]">
+            Rooms
+          </h1>
+          <p className="mt-2 max-w-lg text-[15px] leading-relaxed text-ink-secondary">
+            Open a room to guide the session, review commitments, and close when
+            the work is complete.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 text-xs text-ink-quiet">
+        <div className="flex flex-wrap gap-2 text-[12px]">
           {liveCount > 0 && (
-            <span className="rounded-full border border-accent/30 bg-accent-muted px-2.5 py-1 text-accent">
+            <span className="rounded-full border border-accent/25 bg-accent-muted px-3 py-1 text-accent">
               {liveCount} live
             </span>
           )}
           {needsAttention > 0 && (
-            <span className="rounded-full border border-attention/30 bg-attention-muted px-2.5 py-1 text-attention">
+            <span className="rounded-full border border-attention/25 bg-attention-muted px-3 py-1 text-attention">
               {needsAttention} awaiting review
             </span>
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-3">
+      <ul className="grid gap-3">
         {rooms.map((room) => {
           const count = participants.filter((p) => p.roomId === room.id).length;
           const pending = outcomes.filter(
@@ -65,44 +68,45 @@ export default function FacilitatorHome() {
           ).length;
 
           return (
-            <Link key={room.id} href={`/app/rooms/${room.id}`} className="group block">
-              <article className="surface-raised rounded-xl px-5 py-4 transition-colors group-hover:border-[var(--border-strong)]">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-base font-medium text-ink group-hover:text-accent transition-colors">
-                      {room.title}
-                    </h2>
-                    <p className="mt-1.5 text-sm text-ink-secondary">
-                      Phase: {room.phase}
-                      <span className="mx-1.5 text-ink-quiet">·</span>
-                      {count} participants
-                      {pending > 0 && (
-                        <>
-                          <span className="mx-1.5 text-ink-quiet">·</span>
-                          <span className="text-attention">{pending} awaiting review</span>
-                        </>
-                      )}
-                      {approved > 0 && (
-                        <>
-                          <span className="mx-1.5 text-ink-quiet">·</span>
-                          {approved} on ledger
-                        </>
-                      )}
-                    </p>
-                    <p className="mt-1 text-xs text-ink-quiet">
-                      Created {formatDate(room.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5">
+            <li key={room.id}>
+              <Link href={`/app/rooms/${room.id}`} className="group block">
+                <article className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] px-5 py-5 transition-colors group-hover:border-[var(--border-strong)]">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-[16px] font-medium tracking-tight text-ink transition-colors group-hover:text-accent">
+                        {room.title}
+                      </h2>
+                      <p className="mt-2 text-[13px] text-ink-secondary">
+                        <span className="capitalize">{room.phase}</span>
+                        <span className="mx-2 text-ink-quiet">·</span>
+                        {count} {count === 1 ? "person" : "people"}
+                        {pending > 0 && (
+                          <>
+                            <span className="mx-2 text-ink-quiet">·</span>
+                            <span className="text-attention">
+                              {pending} awaiting review
+                            </span>
+                          </>
+                        )}
+                        {approved > 0 && (
+                          <>
+                            <span className="mx-2 text-ink-quiet">·</span>
+                            {approved} retained
+                          </>
+                        )}
+                      </p>
+                      <p className="mt-1.5 text-[12px] text-ink-quiet">
+                        Created {formatDate(room.createdAt)}
+                      </p>
+                    </div>
                     <RoomStatusMarker status={room.status} />
-                    {room.isDemo && <PrivacyLabel scope="demo" />}
                   </div>
-                </div>
-              </article>
-            </Link>
+                </article>
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }
