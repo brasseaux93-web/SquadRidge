@@ -12,8 +12,12 @@ const statusTone: Record<
   "neutral" | "accent" | "success" | "warning"
 > = {
   draft: "neutral",
+  scheduled: "neutral",
+  waiting: "warning",
   prepared: "warning",
   live: "accent",
+  paused: "warning",
+  safety_review: "warning",
   closing: "warning",
   closed: "success",
 };
@@ -24,7 +28,7 @@ export default function FacilitatorHome() {
   const outcomes = useAppStore((s) => s.outcomes);
   const user = useAppStore((s) => s.currentUser);
 
-  if (user?.role === "participant") {
+  if (user?.role === "participant" || user?.role === "observer") {
     return (
       <Card>
         <p className="text-ink-muted">
@@ -68,12 +72,13 @@ export default function FacilitatorHome() {
                       Phase: {room.phase} · {count} participants
                       {pending > 0 ? ` · ${pending} outcomes awaiting review` : ""}
                       {approved > 0 ? ` · ${approved} on ledger` : ""}
+                      {room.isDemo ? " · Demo" : ""}
                     </p>
                     <p className="mt-1 text-xs text-ink-muted">
-                      Updated context · Created {formatDate(room.createdAt)}
+                      Created {formatDate(room.createdAt)}
                     </p>
                   </div>
-                  <Badge tone={statusTone[room.status]}>{room.status}</Badge>
+                  <Badge tone={statusTone[room.status] ?? "neutral"}>{room.status}</Badge>
                 </div>
               </Card>
             </Link>
