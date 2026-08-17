@@ -1,17 +1,14 @@
 # SquadRidge
 
-A facilitator-led digital environment for structured, sensitive dialogue.
-
-Participants speak under role-based identities. Facilitators guide phases. When the room closes, **live session messages are purged** (fixture/demo behavior); **approved outcomes** remain on the ledger.
+Facilitator-led digital rooms for sensitive dialogue. Approved commitments persist; live messages are designed to be purged on room close.
 
 > The conversation can end. The progress should not.
 
-Source vision: `brasseaux93-web/squadridge-astro` (marketing site).  
-Audit: [`docs/source-repository-audit.md`](docs/source-repository-audit.md)
+**Default mode is a local fixture demo.** Do not put real sensitive case data into this application until authentication, RLS, migrations, and operational review are complete in your environment.
 
 ---
 
-## Quick start
+## Quick start (fixture demo)
 
 ```bash
 npm install
@@ -22,90 +19,59 @@ npm run dev
 |---------|---------|
 | `npm run dev` | Dev server |
 | `npm run build` | Production build |
-| `npm run start` | Serve production build |
 | `npm run typecheck` | TypeScript |
 | `npm run lint` | ESLint |
-| `npm test` | Vitest (domain + service invariants) |
+| `npm test` | Unit tests (fixture/service invariants) |
+| `npm run test:integration` | RLS tests (requires local Supabase + `SUPABASE_INTEGRATION=1`) |
 
-Node >= 20.
+Copy `.env.example` to `.env.local` as needed.
 
 ---
 
-## Data adapter
+## Adapters
 
-| Value | Behavior |
-|-------|----------|
-| `fixture` (default) | In-memory `FixtureRoomRepository` + demo seed data |
-| `supabase` | Skeleton only — **throws** until wired (no silent fallback) |
+| `NEXT_PUBLIC_DATA_ADAPTER` | Behavior |
+|----------------------------|----------|
+| `fixture` (default) | In-memory demo; client `RoomService` rules; **not** production security |
+| `supabase` | Uses anon key + RLS + `approve_outcome` / `close_room` RPCs. **Fails closed** if URL/anon key missing. Never falls back to fixtures. |
 
-Set `NEXT_PUBLIC_DATA_ADAPTER=fixture` (or omit). Do not set `supabase` unless server clients, RLS, and schema are actually deployed.
+Browser env only:
 
-**Never** put `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+**Never** expose `SUPABASE_SERVICE_ROLE_KEY` to the client or `NEXT_PUBLIC_*`.
+
+### Local Supabase
+
+```bash
+npx supabase start
+npx supabase db reset   # applies supabase/migrations
+```
+
+See `docs/rls-verification.md` for the policy matrix and what has / has not been runtime-verified.
 
 ---
 
 ## Architecture
 
-```
-src/domain/          types, transitions, auth result helpers
-src/data/
-  repository.ts      RoomRepository interface + adapter selection
-  fixture-repository.ts
-  supabase-repository.ts   (incomplete skeleton)
-  room-service.ts    authorization + lifecycle rules
-  store.ts           Zustand UI state; delegates mutations to RoomService
-src/components/      ui, room visualizations, layout
-src/app/             routes
-```
-
-Screens should not bypass `RoomService` for mutations.
+- `src/domain` — types, transitions
+- `src/data/repository.ts` — `RoomRepository` + adapter selection
+- `src/data/fixture-repository.ts` — demo store
+- `src/data/supabase-repository.ts` — Supabase Data API + RPCs
+- `src/data/room-service.ts` — UX validation (not a substitute for RLS)
+- `supabase/migrations` — schema, RLS, RPCs
 
 ---
 
-## Product routes
+## Documentation
 
-| Path | Role |
-|------|------|
-| `/` | Public |
-| `/enter` | Demo role selection |
-| `/app` | Facilitator rooms |
-| `/app/rooms/[id]` | Facilitator room workspace |
-| `/app/rooms/[id]/outcomes` | Ledger |
-| `/room/[id]` | Participant |
-| `/privacy`, `/security` | Design-intent pages |
-
----
-
-## Tests (critical invariants)
-
-```bash
-npm test
-```
-
-Covers:
-
-- Proposed outcomes are not participant-visible until approved
-- Participants cannot approve outcomes or close rooms
-- Close purges messages and retains outcomes; close is idempotent
-- Phase changes blocked when closed; participants cannot set phase
-- Messages blocked after close
-
----
-
-## Prototype limitations (honest)
-
-- Client-side fixture purge is **illustrative**, not a production deletion guarantee
-- No real IdP, encryption service, or multi-client realtime
-- No deployed Supabase/RLS
-- Demo banner is always shown
-- Do not claim HIPAA, SOC 2, or legal compliance
-
-See also:
-
-- [`docs/data-lifecycle-and-authorization.md`](docs/data-lifecycle-and-authorization.md)
-- [`docs/supabase-schema-proposal.md`](docs/supabase-schema-proposal.md)
-- [`docs/next-pass-plan.md`](docs/next-pass-plan.md)
-- [`docs/implementation-summary.md`](docs/implementation-summary.md)
+- `docs/source-repository-audit.md`
+- `docs/server-side-security-milestone-plan.md`
+- `docs/data-lifecycle-and-authorization.md`
+- `docs/supabase-schema-proposal.md`
+- `docs/rls-verification.md`
+- `docs/implementation-summary.md`
 
 ---
 
