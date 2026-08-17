@@ -1,8 +1,8 @@
 import type { Config } from "tailwindcss";
 
 /**
- * SquadRidge design tokens map to CSS variables in globals.css.
- * Components must use these semantic names — never hardcoded hex.
+ * SquadRidge design tokens → CSS variables in globals.css.
+ * Components must use semantic names — never hardcoded hex.
  */
 const config: Config = {
   content: [
@@ -13,14 +13,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Surfaces
         canvas: "var(--canvas)",
-        surface: "var(--surface)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          soft: "var(--surface-soft)",
+          raised: "var(--surface-raised)",
+        },
         raised: "var(--surface-raised)",
         deep: "var(--canvas)",
         elevated: "var(--surface-raised)",
 
-        // Brand / action
         accent: {
           DEFAULT: "var(--signal-active)",
           hover: "var(--accent-hover)",
@@ -33,7 +35,6 @@ const config: Config = {
           foreground: "var(--ink-inverse)",
         },
 
-        // Ink
         ink: {
           DEFAULT: "var(--ink)",
           secondary: "var(--ink-secondary)",
@@ -46,7 +47,6 @@ const config: Config = {
           secondary: "var(--ink-secondary)",
         },
 
-        // Semantic signals
         private: {
           DEFAULT: "var(--signal-private)",
           muted: "var(--signal-private-muted)",
@@ -67,21 +67,11 @@ const config: Config = {
           DEFAULT: "var(--signal-consented)",
           muted: "var(--signal-consented-muted)",
         },
-
-        /**
-         * Ephemeral = live, temporary dialogue (not encryption).
-         * Honest product language only.
-         */
         ephemeral: {
           DEFAULT: "var(--signal-ephemeral)",
           muted: "var(--signal-ephemeral-muted)",
           foreground: "var(--signal-ephemeral-fg)",
         },
-
-        /**
-         * Secure = room-scoped / access-controlled boundary markers.
-         * Does NOT claim zero-knowledge or E2E encryption.
-         */
         secure: {
           DEFAULT: "var(--signal-secure)",
           muted: "var(--signal-secure-muted)",
@@ -98,7 +88,6 @@ const config: Config = {
         warning: "var(--signal-attention)",
         success: "var(--signal-progress)",
 
-        // Marketing (light) aliases
         marketing: {
           canvas: "var(--m-canvas)",
           surface: "var(--m-surface)",
@@ -142,7 +131,11 @@ const config: Config = {
       keyframes: {
         dissolveOut: {
           "0%": { opacity: "1", filter: "blur(0)" },
-          "100%": { opacity: "0", filter: "blur(6px)", transform: "translateY(4px)" },
+          "100%": {
+            opacity: "0",
+            filter: "blur(6px)",
+            transform: "translateY(4px)",
+          },
         },
         pulseSoft: {
           "0%, 100%": { opacity: "1" },

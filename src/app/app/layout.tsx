@@ -25,8 +25,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-canvas/90 backdrop-blur-md">
+    <div className="min-h-dvh bg-canvas">
+      <header className="sticky top-0 z-30 border-b border-border-subtle bg-canvas/90 backdrop-blur-md">
         <div className="container-app flex h-14 items-center justify-between gap-4">
           <div className="flex items-center gap-8">
             <Link
@@ -41,8 +41,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "rounded-[10px] px-3 py-1.5 text-[13px] transition-colors",
                   pathname === "/app" || pathname.startsWith("/app/rooms")
-                    ? "bg-white/[0.06] text-ink"
-                    : "text-ink-secondary hover:text-ink"
+                    ? "bg-accent-muted text-ink"
+                    : "text-ink-secondary hover:text-ink hover:bg-surface-soft"
                 )}
               >
                 Rooms
@@ -57,7 +57,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </span>
             <button
               type="button"
-              className="rounded-[10px] border border-[var(--border-default)] px-3 py-1.5 text-[13px] text-ink-secondary transition-colors hover:border-[var(--border-strong)] hover:text-ink"
+              className="rounded-[10px] border border-border-default px-3 py-1.5 text-[13px] text-ink-secondary transition-colors hover:border-border-strong hover:text-ink"
               onClick={() => {
                 signOut();
                 router.push("/enter");

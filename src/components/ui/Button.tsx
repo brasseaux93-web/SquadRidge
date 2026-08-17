@@ -12,15 +12,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
+/** Light-theme variants — semantic tokens only, no hardcoded hex */
 const variants: Record<Variant, string> = {
   primary:
     "bg-accent text-ink-inverse hover:bg-accent-hover shadow-soft border border-transparent",
   ghost:
-    "bg-transparent text-ink border border-white/15 hover:border-accent hover:bg-white/[0.04]",
+    "bg-transparent text-ink border border-border-default hover:border-accent hover:bg-accent-muted",
   danger:
-    "bg-danger/10 text-danger border border-danger/40 hover:bg-danger/20",
+    "bg-danger/10 text-danger border border-danger/30 hover:bg-danger/15",
   subtle:
-    "bg-elevated text-ink border border-white/8 hover:border-white/15",
+    "bg-surface text-ink border border-border-subtle hover:border-border-default shadow-soft",
 };
 
 export function Button({
@@ -36,7 +37,7 @@ export function Button({
     <motion.button
       whileTap={reduce || disabled ? undefined : { scale: 0.98 }}
       className={cn(
-        "inline-flex min-h-[42px] items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex min-h-[42px] items-center justify-center gap-2 rounded-[12px] px-5 py-2.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
         className
       )}
