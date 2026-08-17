@@ -35,6 +35,16 @@
   --signal-consented: #9a9488;
   --signal-consented-muted: rgba(154, 148, 136, 0.12);
 
+  /* Ephemeral = temporary live dialogue (not encryption) */
+  --signal-ephemeral: #c4a35a;
+  --signal-ephemeral-muted: rgba(196, 163, 90, 0.14);
+  --signal-ephemeral-fg: #e4c98a;
+
+  /* Secure = room-scoped access boundary (not zero-knowledge) */
+  --signal-secure: #6a8a83;
+  --signal-secure-muted: rgba(106, 138, 131, 0.14);
+  --signal-secure-fg: #9bb5ae;
+
   --bg-deep: var(--canvas);
   --bg-surface: var(--surface);
   --bg-elevated: var(--surface-raised);
@@ -138,7 +148,6 @@ body {
   color: var(--ink);
 }
 
-/* Marketing page resets body look when scoped */
 .theme-marketing {
   background: var(--m-canvas);
   color: var(--m-ink);
@@ -200,7 +209,6 @@ body {
     @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.65rem] font-medium tracking-wide;
   }
 
-  /* Marketing buttons */
   .btn-m-primary {
     @apply inline-flex min-h-[44px] items-center justify-center rounded-[12px] px-5 text-[15px] font-medium transition-colors;
     background: var(--m-accent);
