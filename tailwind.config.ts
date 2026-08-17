@@ -1,5 +1,9 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * SquadRidge design tokens map to CSS variables in globals.css.
+ * Components must use these semantic names — never hardcoded hex.
+ */
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,16 +13,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Surfaces
         canvas: "var(--canvas)",
         surface: "var(--surface)",
         raised: "var(--surface-raised)",
         deep: "var(--canvas)",
         elevated: "var(--surface-raised)",
+
+        // Brand / action
         accent: {
           DEFAULT: "var(--signal-active)",
           hover: "var(--accent-hover)",
           muted: "var(--signal-active-muted)",
+          foreground: "var(--ink-inverse)",
         },
+        primary: {
+          DEFAULT: "var(--signal-active)",
+          hover: "var(--accent-hover)",
+          foreground: "var(--ink-inverse)",
+        },
+
+        // Ink
         ink: {
           DEFAULT: "var(--ink)",
           secondary: "var(--ink-secondary)",
@@ -26,6 +41,12 @@ const config: Config = {
           quiet: "var(--ink-quiet)",
           inverse: "var(--ink-inverse)",
         },
+        text: {
+          primary: "var(--ink)",
+          secondary: "var(--ink-secondary)",
+        },
+
+        // Semantic signals
         private: {
           DEFAULT: "var(--signal-private)",
           muted: "var(--signal-private-muted)",
@@ -46,9 +67,47 @@ const config: Config = {
           DEFAULT: "var(--signal-consented)",
           muted: "var(--signal-consented-muted)",
         },
+
+        /**
+         * Ephemeral = live, temporary dialogue (not encryption).
+         * Honest product language only.
+         */
+        ephemeral: {
+          DEFAULT: "var(--signal-ephemeral)",
+          muted: "var(--signal-ephemeral-muted)",
+          foreground: "var(--signal-ephemeral-fg)",
+        },
+
+        /**
+         * Secure = room-scoped / access-controlled boundary markers.
+         * Does NOT claim zero-knowledge or E2E encryption.
+         */
+        secure: {
+          DEFAULT: "var(--signal-secure)",
+          muted: "var(--signal-secure-muted)",
+          foreground: "var(--signal-secure-fg)",
+        },
+
+        border: {
+          DEFAULT: "var(--border-default)",
+          subtle: "var(--border-subtle)",
+          strong: "var(--border-strong)",
+        },
+
         danger: "var(--signal-critical)",
         warning: "var(--signal-attention)",
         success: "var(--signal-progress)",
+
+        // Marketing (light) aliases
+        marketing: {
+          canvas: "var(--m-canvas)",
+          surface: "var(--m-surface)",
+          ink: "var(--m-ink)",
+          secondary: "var(--m-ink-secondary)",
+          quiet: "var(--m-ink-quiet)",
+          accent: "var(--m-accent)",
+          border: "var(--m-border)",
+        },
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
@@ -79,6 +138,20 @@ const config: Config = {
         short: "var(--duration-short)",
         medium: "var(--duration-medium)",
         deliberate: "var(--duration-deliberate)",
+      },
+      keyframes: {
+        dissolveOut: {
+          "0%": { opacity: "1", filter: "blur(0)" },
+          "100%": { opacity: "0", filter: "blur(6px)", transform: "translateY(4px)" },
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.72" },
+        },
+      },
+      animation: {
+        dissolve: "dissolveOut 1.2s var(--ease-out) forwards",
+        "pulse-soft": "pulseSoft 2.8s ease-in-out infinite",
       },
     },
   },
