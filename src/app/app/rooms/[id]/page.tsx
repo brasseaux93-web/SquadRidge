@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { PrivacyLabel } from "@/components/ui/PrivacyLabel";
 import { RoomStatusMarker } from "@/components/ui/StatusMarker";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -103,24 +102,25 @@ export default function FacilitatorRoomPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Session header */}
-      <header className="space-y-3">
+    <div className="space-y-8">
+      <header className="space-y-4">
         <Link
           href="/app"
-          className="text-xs text-ink-quiet hover:text-ink-secondary transition-colors"
+          className="text-[12px] text-ink-quiet transition-colors hover:text-ink-secondary"
         >
           ← Rooms
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-2xl tracking-tight text-ink sm:text-3xl">
+          <div className="min-w-0">
+            <h1 className="font-display text-[1.75rem] tracking-tight text-ink sm:text-[2rem]">
               {room.title}
             </h1>
-            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <RoomStatusMarker status={room.status} />
               <PrivacyLabel scope={room.isDemo ? "demo" : "room"} />
-              <span className="text-xs text-ink-quiet">Invite {room.inviteCode}</span>
+              <span className="text-[12px] text-ink-quiet">
+                Invite {room.inviteCode}
+              </span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -129,10 +129,10 @@ export default function FacilitatorRoomPage() {
                 <ProtectedPause disabled={busy} />
                 <Button
                   variant="danger"
-                  className="min-h-[36px] px-3.5 py-1.5 text-xs"
+                  className="min-h-[36px] rounded-[10px] px-3.5 py-1.5 text-[12px]"
                   onClick={() => setConfirmClose(true)}
                 >
-                  Close room & purge chat
+                  Close room
                 </Button>
               </>
             )}
@@ -143,7 +143,7 @@ export default function FacilitatorRoomPage() {
       {lastError && (
         <div
           role="alert"
-          className="rounded-lg border border-critical/30 bg-critical-muted px-4 py-3 text-sm text-critical"
+          className="rounded-[14px] border border-critical/30 bg-critical-muted px-4 py-3 text-[14px] text-critical"
         >
           {lastError}{" "}
           <button type="button" className="underline" onClick={clearError}>
@@ -156,47 +156,57 @@ export default function FacilitatorRoomPage() {
       <InformationLifecycle status={room.status} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Main column: dialogue + propose */}
-        <div className="space-y-4">
-          <section className="surface-raised flex min-h-[440px] flex-col rounded-xl">
-            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-3">
-              <h2 className="text-sm font-medium text-ink">Live dialogue</h2>
+        <div className="space-y-5">
+          <section className="flex min-h-[440px] flex-col rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
+            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-5 py-3.5">
+              <div>
+                <h2 className="text-[14px] font-medium text-ink">Live dialogue</h2>
+                <p className="mt-0.5 text-[11px] text-ink-quiet">
+                  Temporary · visible to people in this room
+                </p>
+              </div>
               <PrivacyLabel scope={isClosed ? "demo" : "room"} />
             </div>
 
             <div
-              className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
+              className="flex-1 space-y-5 overflow-y-auto px-5 py-5"
               aria-live="polite"
             >
               <AnimatePresence initial={false}>
                 {messages.length === 0 ? (
                   <EmptyState
-                    title={isClosed ? "Session dialogue purged" : "No messages yet"}
+                    title={isClosed ? "Dialogue ended with the room" : "Waiting for the first voice"}
                     description={
                       isClosed
-                        ? "Approved outcomes remain on the ledger. Live exchange is not retained."
-                        : "Participants appear under assigned roles. Real names stay outside the room."
+                        ? "Approved commitments remain. Live exchange is not retained."
+                        : "People appear under assigned roles. The focus stays on what is said."
                     }
                   />
                 ) : (
                   messages.map((m) => (
                     <motion.article
                       key={m.id}
-                      initial={reduce ? false : { opacity: 0, y: 6 }}
+                      initial={reduce ? false : { opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                       className="transcript-line"
                       data-facilitator={m.isFacilitator}
                     >
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-accent">
+                        <span
+                          className={`text-[11px] font-semibold tracking-wide ${
+                            m.isFacilitator ? "text-accent" : "text-ink-quiet"
+                          }`}
+                        >
                           {m.displayRole}
                         </span>
-                        <time className="text-[0.65rem] text-ink-quiet">
+                        <time className="text-[11px] text-ink-quiet">
                           {formatDate(m.createdAt)}
                         </time>
                       </div>
-                      <p className="mt-1 text-sm leading-relaxed text-ink">{m.body}</p>
+                      <p className="mt-1.5 text-[14px] leading-relaxed text-ink">
+                        {m.body}
+                      </p>
                     </motion.article>
                   ))
                 )}
@@ -204,7 +214,7 @@ export default function FacilitatorRoomPage() {
             </div>
 
             {!isClosed && (
-              <div className="border-t border-[var(--border-subtle)] px-4 py-3">
+              <div className="border-t border-[var(--border-subtle)] px-5 py-4">
                 <label className="sr-only" htmlFor="fac-msg">
                   Facilitator message
                 </label>
@@ -213,15 +223,15 @@ export default function FacilitatorRoomPage() {
                   rows={2}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder="Guide the room as Facilitator…"
-                  className="w-full rounded-md border border-white/10 bg-canvas px-3 py-2 text-sm text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                  placeholder="Guide the room…"
+                  className="w-full rounded-[12px] border border-white/10 bg-canvas px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
                 />
-                <div className="mt-2 flex justify-end">
+                <div className="mt-3 flex justify-end">
                   <Button
                     onClick={handleSend}
                     disabled={!draft.trim() || busy}
                     loading={busy}
-                    className="min-h-[36px] px-4 text-xs"
+                    className="min-h-[36px] rounded-[10px] px-4 text-[12px]"
                   >
                     Send
                   </Button>
@@ -231,57 +241,53 @@ export default function FacilitatorRoomPage() {
           </section>
 
           {!isClosed && (
-            <section className="surface-raised rounded-xl p-4">
-              <h2 className="text-sm font-medium text-ink">Propose commitment</h2>
-              <p className="mt-1 text-xs text-ink-secondary">
-                Nothing reaches the ledger without your approval. Participants do not
-                see unapproved proposals as final.
+            <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+              <h2 className="text-[14px] font-medium text-ink">Propose a commitment</h2>
+              <p className="mt-1 text-[12px] leading-relaxed text-ink-secondary">
+                Nothing is retained without your approval.
               </p>
               <textarea
                 rows={3}
                 value={outcomeDraft}
                 onChange={(e) => setOutcomeDraft(e.target.value)}
-                placeholder="e.g. Bi-weekly technical reviews before production deployments."
-                className="mt-3 w-full rounded-md border border-white/10 bg-canvas px-3 py-2 text-sm text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                placeholder="We agree to…"
+                className="mt-3 w-full rounded-[12px] border border-white/10 bg-canvas px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
               />
-              <div className="mt-2 flex justify-end">
+              <div className="mt-3 flex justify-end">
                 <Button
                   variant="subtle"
                   onClick={handlePropose}
                   disabled={!outcomeDraft.trim() || busy}
-                  className="min-h-[36px] px-4 text-xs"
+                  className="min-h-[36px] rounded-[10px] px-4 text-[12px]"
                 >
-                  Add to review queue
+                  Add for review
                 </Button>
               </div>
             </section>
           )}
 
           {isClosed && (
-            <section className="rounded-xl border border-progress/25 bg-progress-muted/30 p-4">
-              <h2 className="text-sm font-medium text-ink">Room closed</h2>
-              <p className="mt-2 text-sm text-ink-secondary">
+            <section className="rounded-[16px] border border-progress/20 bg-progress-muted/25 p-5">
+              <h2 className="text-[14px] font-medium text-ink">Room closed</h2>
+              <p className="mt-2 text-[14px] leading-relaxed text-ink-secondary">
                 Closed {room.closedAt ? formatDate(room.closedAt) : ""}. Live dialogue
-                was purged. Review the{" "}
+                was removed. Review{" "}
                 <Link
                   href={`/app/rooms/${room.id}/outcomes`}
                   className="text-accent hover:underline"
                 >
-                  outcome ledger
-                </Link>{" "}
-                for retained commitments.
+                  retained commitments
+                </Link>
+                .
               </p>
             </section>
           )}
         </div>
 
-        {/* Side rail */}
         <aside className="space-y-4">
-          <section className="surface-raised rounded-xl p-4">
-            <h2 className="text-sm font-medium text-ink">Session phase</h2>
-            <p className="mt-1 text-xs text-ink-quiet">
-              Facilitator control. Participants see the current threshold.
-            </p>
+          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+            <h2 className="text-[13px] font-medium text-ink">Session phase</h2>
+            <p className="mt-1 text-[11px] text-ink-quiet">Visible to everyone in the room</p>
             <div
               className="mt-3 flex flex-wrap gap-1.5"
               role="group"
@@ -293,7 +299,7 @@ export default function FacilitatorRoomPage() {
                   type="button"
                   disabled={isClosed || busy}
                   onClick={() => handlePhase(p)}
-                  className={`rounded-full border px-2.5 py-1 text-[0.7rem] capitalize transition-colors disabled:opacity-40 ${
+                  className={`rounded-full border px-2.5 py-1 text-[11px] capitalize transition-colors disabled:opacity-40 ${
                     room.phase === p
                       ? "border-accent bg-accent-muted text-accent"
                       : "border-white/10 text-ink-quiet hover:border-white/20 hover:text-ink-secondary"
@@ -305,51 +311,48 @@ export default function FacilitatorRoomPage() {
             </div>
           </section>
 
-          <section className="surface-raised rounded-xl p-4">
-            <h2 className="text-sm font-medium text-ink">Participants</h2>
-            <ul className="mt-3 space-y-2">
+          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+            <h2 className="text-[13px] font-medium text-ink">In the room</h2>
+            <ul className="mt-3 space-y-2.5">
               {participants.map((p) => (
-                <li
-                  key={p.id}
-                  className="flex items-center justify-between text-sm"
-                >
+                <li key={p.id} className="flex items-center justify-between text-[13px]">
                   <span className="text-ink">{p.displayRole}</span>
                   {p.isFacilitator && (
-                    <span className="text-[0.65rem] text-accent">Facilitator</span>
+                    <span className="text-[11px] text-accent">Facilitator</span>
                   )}
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[0.7rem] text-ink-quiet">
-              Real names are held outside the room context.
-            </p>
           </section>
 
-          <section className="surface-raised rounded-xl p-4">
-            <h2 className="text-sm font-medium text-ink">Working agreements</h2>
-            <ul className="mt-3 space-y-1.5 text-sm text-ink-secondary">
+          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+            <h2 className="text-[13px] font-medium text-ink">Working agreements</h2>
+            <ul className="mt-3 space-y-2 text-[13px] leading-relaxed text-ink-secondary">
               {room.groundRules.map((g) => (
                 <li key={g} className="flex gap-2">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-quiet" aria-hidden />
+                  <span
+                    className="mt-2 h-1 w-1 shrink-0 rounded-full bg-ink-quiet"
+                    aria-hidden
+                  />
                   {g}
                 </li>
               ))}
             </ul>
           </section>
 
-          <section className="surface-raised rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-ink">Commitments</h2>
+          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-[13px] font-medium text-ink">Commitments</h2>
               <Link
                 href={`/app/rooms/${room.id}/outcomes`}
-                className="text-[0.7rem] text-accent hover:underline"
+                className="text-[11px] text-accent hover:underline"
               >
-                Full ledger
+                View all
               </Link>
             </div>
             <div className="mt-3 space-y-3">
               {outcomes.length === 0 && (
-                <p className="text-sm text-ink-quiet">No commitments yet.</p>
+                <p className="text-[13px] text-ink-quiet">None yet.</p>
               )}
               {outcomes.map((o) => (
                 <CommitmentCard
@@ -377,25 +380,25 @@ export default function FacilitatorRoomPage() {
             aria-labelledby="close-title"
           >
             <motion.div
-              className="w-full max-w-md rounded-xl border border-[var(--border-default)] bg-raised p-6 shadow-lift"
-              initial={reduce ? false : { scale: 0.97, y: 6 }}
+              className="w-full max-w-md rounded-[18px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-6 shadow-lift"
+              initial={reduce ? false : { scale: 0.98, y: 6 }}
               animate={{ scale: 1, y: 0 }}
             >
               <h2 id="close-title" className="font-display text-xl text-ink">
-                Close room and purge chat?
+                Close this room?
               </h2>
-              <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-ink-secondary">
+              <ul className="mt-4 space-y-2.5 text-[14px] leading-relaxed text-ink-secondary">
                 <li>
-                  <strong className="text-ink">Deleted:</strong> all live session
-                  messages in this demo store for this room.
+                  <span className="font-medium text-ink">Removed:</span> live session
+                  messages for this room in the demo store.
                 </li>
                 <li>
-                  <strong className="text-ink">Kept:</strong> approved outcome ledger
-                  entries.
+                  <span className="font-medium text-ink">Kept:</span> approved
+                  commitments.
                 </li>
-                <li>
-                  This is an in-browser demonstration of minimized retention—not a
-                  production deletion guarantee.
+                <li className="text-[13px] text-ink-quiet">
+                  This demonstrates minimized retention. It is not a production
+                  deletion guarantee.
                 </li>
               </ul>
               <div className="mt-6 flex justify-end gap-2">
@@ -407,7 +410,7 @@ export default function FacilitatorRoomPage() {
                   Cancel
                 </Button>
                 <Button variant="danger" onClick={handleClose} loading={busy}>
-                  Close & purge
+                  Close room
                 </Button>
               </div>
             </motion.div>
