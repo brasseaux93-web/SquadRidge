@@ -10,7 +10,7 @@ export function Badge({
   className?: string;
 }) {
   const tones = {
-    neutral: "border-white/10 bg-white/[0.04] text-ink-secondary",
+    neutral: "border-border-default bg-surface-soft text-ink-secondary",
     accent: "border-accent/30 bg-accent-muted text-accent",
     danger: "border-critical/30 bg-critical-muted text-critical",
     warning: "border-attention/30 bg-attention-muted text-attention",
