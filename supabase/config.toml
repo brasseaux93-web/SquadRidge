@@ -1,6 +1,6 @@
 # Local Supabase CLI configuration for SquadRidge.
 # Start: npx supabase start
-# Reset + migrate: npx supabase db reset
+# Reset + migrate + seed: npx supabase db reset
 
 project_id = "squadridge-local"
 
@@ -11,6 +11,10 @@ port = 54321
 [db]
 port = 54322
 major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
 
 [studio]
 enabled = true
