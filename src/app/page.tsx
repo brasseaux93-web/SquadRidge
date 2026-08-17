@@ -1,241 +1,285 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
-import { PrivacyLabel } from "@/components/ui/PrivacyLabel";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { ProductMockup } from "@/components/marketing/ProductMockup";
+
+const benefits = [
+  {
+    title: "Enter with context",
+    body: "Participants arrive through clear roles and shared expectations, so the conversation can focus on what matters.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+        <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
+        <path
+          d="M4 16c1.2-2.4 3.2-3.6 6-3.6s4.8 1.2 6 3.6"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Facilitate with care",
+    body: "A visible session structure helps facilitators guide listening, clarification, options, and agreement.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+        <path
+          d="M4 10h12M10 4v12"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4" />
+      </svg>
+    ),
+  },
+  {
+    title: "Keep only what is agreed",
+    body: "Live dialogue ends with the room. Only approved commitments move forward.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+        <path
+          d="M5 10.5l3 3 7-7"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+];
+
+const audiences = [
+  {
+    title: "Mediators",
+    body: "Hold structured sessions where roles stay clear and only agreed next steps are kept.",
+  },
+  {
+    title: "Ombuds teams",
+    body: "Offer a calmer digital room for sensitive workplace dialogue without a permanent transcript by default.",
+  },
+  {
+    title: "Employee relations",
+    body: "Support difficult conversations with facilitation tools and explicit commitment records.",
+  },
+  {
+    title: "Institutional pilot partners",
+    body: "Evaluate a bounded process for facilitated dialogue before wider deployment.",
+  },
+];
 
 export default function HomePage() {
   return (
-    <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 border-b border-[var(--border-subtle)] bg-canvas/85 backdrop-blur-md">
-        <div className="container-app flex h-14 items-center justify-between">
-          <Link href="/" className="font-display text-xl tracking-tight text-ink">
-            SquadRidge
-          </Link>
-          <nav className="hidden items-center gap-7 text-sm text-ink-secondary md:flex">
-            <a href="#arc" className="hover:text-ink transition-colors">
-              The arc
-            </a>
-            <a href="#boundaries" className="hover:text-ink transition-colors">
-              Boundaries
-            </a>
-            <a href="#for-whom" className="hover:text-ink transition-colors">
-              For whom
-            </a>
-            <Link href="/enter">
-              <Button variant="ghost" className="min-h-[34px] px-3.5 py-1.5 text-sm">
-                Enter demo
-              </Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="theme-marketing">
+      <MarketingNav />
+
+      <p
+        className="border-b px-5 py-2 text-center text-[12px] leading-relaxed text-[var(--m-ink-quiet)] sm:px-8"
+        style={{ borderColor: "var(--m-border)" }}
+      >
+        Prototype preview — uses sample data. Production identity verification and
+        encryption are not active.
+      </p>
 
       <main>
         {/* Hero */}
-        <section className="container-app grid gap-12 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-24">
+        <section className="container-marketing grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
           <div>
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <span className="section-label">Pilot infrastructure · mediators & ombuds</span>
-              <PrivacyLabel scope="demo" />
-            </div>
-            <h1 className="font-display text-[2.35rem] leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-[3.15rem]">
-              Private rooms for difficult conversations — and durable next steps.
+            <p className="text-[13px] font-medium tracking-wide text-[var(--m-accent)]">
+              For conversations that need care
+            </p>
+            <h1 className="mt-4 text-[42px] font-semibold leading-[1.05] tracking-[-0.03em] text-[var(--m-ink)] sm:text-[56px] lg:text-[64px]">
+              Difficult conversations deserve better infrastructure.
             </h1>
-            <p className="mt-5 max-w-prose text-base leading-relaxed text-ink-secondary sm:text-lg">
-              SquadRidge is facilitator-led dialogue infrastructure. Participants enter
-              under assigned roles. Live exchange is temporary. Only consented
-              commitments cross into a retained record.
+            <p className="mt-5 max-w-[34rem] text-[17px] leading-[1.55] text-[var(--m-ink-secondary)] sm:text-[18px]">
+              SquadRidge gives facilitators a private, structured space for
+              dialogue—and a clear path to the commitments people choose to carry
+              forward.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/enter">
-                <Button>Enter the facilitated room demo</Button>
+              <Link href="/enter" className="btn-m-primary">
+                Explore the demo
               </Link>
-              <a href="#arc">
-                <Button variant="ghost">See the product arc</Button>
+              <a href="#how" className="btn-m-secondary">
+                How it works
               </a>
             </div>
-            <p className="mt-6 max-w-md text-xs leading-relaxed text-ink-quiet">
-              This is a prototype. Fixture data is used. Real identity verification and
-              production encryption are not active. Transparency is intentional.
-            </p>
           </div>
 
-          {/* Abstract governed-passage visual */}
-          <div className="relative">
-            <div className="surface-raised overflow-hidden rounded-xl shadow-lift">
-              <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-2.5">
-                <span className="text-xs font-medium text-ink">Governed passage</span>
-                <PrivacyLabel scope="room" />
-              </div>
-              <div className="space-y-0 p-5">
-                {/* Abstract rooms connected by controlled path */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-16 w-20 flex-col items-center justify-center rounded-md border border-private/30 bg-private-muted">
-                    <span className="text-[0.6rem] uppercase tracking-wider text-private">Room</span>
-                    <span className="mt-0.5 text-xs text-ink-secondary">Dialogue</span>
-                  </div>
-                  <div className="h-px flex-1 bg-gradient-to-r from-private/40 via-white/15 to-progress/40" aria-hidden />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-attention/40 bg-attention-muted">
-                    <span className="text-[0.55rem] font-medium text-attention">Gate</span>
-                  </div>
-                  <div className="h-px flex-1 bg-gradient-to-r from-progress/30 to-consented/40" aria-hidden />
-                  <div className="flex h-16 w-20 flex-col items-center justify-center rounded-md border border-progress/30 bg-progress-muted">
-                    <span className="text-[0.6rem] uppercase tracking-wider text-progress">Ledger</span>
-                    <span className="mt-0.5 text-xs text-ink-secondary">Retained</span>
-                  </div>
-                </div>
-                <p className="mt-5 text-center text-[0.7rem] leading-relaxed text-ink-quiet">
-                  Only approved, consented commitments cross the boundary.
-                  Session text does not.
-                </p>
-              </div>
-              <div className="border-t border-[var(--border-subtle)] bg-canvas/40 px-4 py-2.5 text-[0.65rem] text-ink-quiet">
-                Abstract system model · not a live operational view
-              </div>
-            </div>
+          <div className="lg:justify-self-end lg:w-full lg:max-w-[440px]">
+            <ProductMockup />
           </div>
         </section>
 
-        {/* Product arc */}
-        <section className="border-t border-[var(--border-subtle)] py-16" id="arc">
-          <div className="container-app">
-            <span className="section-label">The product arc</span>
-            <h2 className="mt-2 max-w-2xl font-display text-3xl text-ink sm:text-4xl">
-              From private exchange to accountable next steps.
-            </h2>
-            <ol className="mt-12 grid gap-6 md:grid-cols-3">
-              {[
-                {
-                  n: "01",
-                  title: "Enter under role",
-                  body: "Participants are invited or verified before entry. Inside the room they appear through facilitator-assigned roles so the focus stays on substance, not status.",
-                },
-                {
-                  n: "02",
-                  title: "Facilitate with structure",
-                  body: "A visible Dialogue Spine guides phases—arrival, listening, clarification, options, commitments—without turning the room into a surveillance surface.",
-                },
-                {
-                  n: "03",
-                  title: "Retain only what is agreed",
-                  body: "When the room closes, live dialogue is purged. Only facilitator-approved, consented commitments move to the outcome ledger.",
-                },
-              ].map((step) => (
-                <li
-                  key={step.n}
-                  className="rounded-lg border border-[var(--border-subtle)] bg-surface/50 p-5"
-                >
-                  <span className="font-mono text-xs text-ink-quiet">{step.n}</span>
-                  <h3 className="mt-2 text-base font-medium text-ink">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{step.body}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* Boundaries */}
-        <section className="border-t border-[var(--border-subtle)] py-16" id="boundaries">
-          <div className="container-app max-w-3xl">
-            <span className="section-label">Boundaries</span>
-            <h2 className="mt-2 font-display text-3xl text-ink sm:text-4xl">
-              Privacy is operational, not ornamental.
-            </h2>
-            <p className="mt-4 text-ink-secondary">
-              SquadRidge is designed around minimized retention and explicit consent.
-              What appears where is deliberate. Nothing is implied that the system
-              does not actually enforce.
+        {/* Benefits */}
+        <section
+          id="how"
+          className="border-t py-16 sm:py-20"
+          style={{ borderColor: "var(--m-border)" }}
+        >
+          <div className="container-marketing">
+            <p className="text-[13px] font-medium text-[var(--m-ink-quiet)]">
+              Designed for the whole conversation
             </p>
-            <ul className="mt-8 space-y-3">
-              {[
-                {
-                  label: "Room",
-                  text: "Live dialogue is visible only to current room members while the session is open.",
-                },
-                {
-                  label: "Facilitators",
-                  text: "Working proposals and safety requests are visible to assigned facilitators.",
-                },
-                {
-                  label: "Ledger",
-                  text: "Only approved commitments are retained after close. Publication requires additional consent.",
-                },
-                {
-                  label: "Demo",
-                  text: "This prototype uses fixture data. No production encryption or identity verification is active.",
-                },
-              ].map((row) => (
-                <li
-                  key={row.label}
-                  className="flex gap-4 rounded-lg border border-[var(--border-subtle)] bg-surface/40 px-4 py-3"
-                >
-                  <span className="w-24 shrink-0 text-xs font-medium uppercase tracking-wide text-ink-quiet">
-                    {row.label}
-                  </span>
-                  <span className="text-sm text-ink-secondary">{row.text}</span>
+            <h2 className="mt-3 max-w-[28rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+              From a hard conversation to a shared next step.
+            </h2>
+
+            <ul className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-8">
+              {benefits.map((item) => (
+                <li key={item.title}>
+                  <div
+                    className="mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] text-[var(--m-accent)]"
+                    style={{ background: "var(--m-accent-soft)" }}
+                  >
+                    {item.icon}
+                  </div>
+                  <h3 className="text-[17px] font-semibold text-[var(--m-ink)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--m-ink-secondary)]">
+                    {item.body}
+                  </p>
                 </li>
               ))}
             </ul>
           </div>
         </section>
 
-        {/* For whom */}
-        <section className="border-t border-[var(--border-subtle)] py-16" id="for-whom">
-          <div className="container-app">
-            <span className="section-label">For whom</span>
-            <h2 className="mt-2 max-w-xl font-display text-3xl text-ink">
-              Built for people who hold hard conversations.
+        {/* Privacy */}
+        <section
+          id="privacy"
+          className="border-t py-16 sm:py-20"
+          style={{ borderColor: "var(--m-border)" }}
+        >
+          <div className="container-marketing max-w-[720px]">
+            <p className="text-[13px] font-medium text-[var(--m-ink-quiet)]">
+              Privacy by design
+            </p>
+            <h2 className="mt-3 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+              The conversation is not the record.
             </h2>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                "Mediators",
-                "Ombuds teams",
-                "HR / Employee Relations",
-                "Institutional pilot partners",
-              ].map((audience) => (
-                <div
-                  key={audience}
-                  className="rounded-lg border border-[var(--border-subtle)] bg-surface/40 px-4 py-5 text-center text-sm font-medium text-ink"
-                >
-                  {audience}
-                </div>
-              ))}
+            <p className="mt-4 text-[17px] leading-relaxed text-[var(--m-ink-secondary)]">
+              SquadRidge separates a live, facilitator-led session from the
+              commitments people explicitly choose to retain.
+            </p>
+
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <div
+                className="rounded-[18px] border p-5"
+                style={{
+                  borderColor: "var(--m-border)",
+                  background: "var(--m-surface)",
+                }}
+              >
+                <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--m-ink-quiet)]">
+                  Inside the room
+                </p>
+                <p className="mt-3 text-[15px] leading-relaxed text-[var(--m-ink)]">
+                  Temporary live dialogue, visible to current participants while the
+                  session is open.
+                </p>
+              </div>
+              <div
+                className="rounded-[18px] border p-5"
+                style={{
+                  borderColor: "var(--m-border)",
+                  background: "var(--m-accent-soft)",
+                }}
+              >
+                <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--m-accent)]">
+                  After the room
+                </p>
+                <p className="mt-3 text-[15px] leading-relaxed text-[var(--m-ink)]">
+                  Approved commitments only—what the group explicitly chooses to keep.
+                </p>
+              </div>
             </div>
+
+            <p className="mt-6 text-[13px] leading-relaxed text-[var(--m-ink-quiet)]">
+              In this preview, data is fixture-only. Production privacy controls are
+              not yet active.
+            </p>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="border-t border-[var(--border-subtle)] py-16">
-          <div className="container-app text-center">
-            <h2 className="font-display text-3xl text-ink">Experience the facilitated room</h2>
-            <p className="mx-auto mt-3 max-w-prose text-ink-secondary">
-              Walk through phases, dialogue under roles, outcome approval, and room
-              close with message purge—using clearly labeled demo data.
+        {/* Audience */}
+        <section
+          id="audience"
+          className="border-t py-16 sm:py-20"
+          style={{ borderColor: "var(--m-border)" }}
+        >
+          <div className="container-marketing">
+            <h2 className="max-w-[24rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+              Built for people who hold hard conversations.
+            </h2>
+            <ul className="mt-12 grid gap-6 sm:grid-cols-2">
+              {audiences.map((a) => (
+                <li
+                  key={a.title}
+                  className="rounded-[18px] border p-6"
+                  style={{
+                    borderColor: "var(--m-border)",
+                    background: "var(--m-surface)",
+                  }}
+                >
+                  <h3 className="text-[16px] font-semibold text-[var(--m-ink)]">
+                    {a.title}
+                  </h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--m-ink-secondary)]">
+                    {a.body}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* Closing CTA */}
+        <section
+          className="border-t py-16 sm:py-20"
+          style={{ borderColor: "var(--m-border)" }}
+        >
+          <div className="container-marketing text-center">
+            <h2 className="mx-auto max-w-[28rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+              See what a more deliberate conversation space feels like.
+            </h2>
+            <p className="mx-auto mt-4 max-w-[32rem] text-[17px] leading-relaxed text-[var(--m-ink-secondary)]">
+              Walk through a guided room, role-based dialogue, commitment approval,
+              and a clear room close using sample data.
             </p>
             <div className="mt-8">
-              <Link href="/enter">
-                <Button>Enter demo</Button>
+              <Link href="/enter" className="btn-m-primary">
+                Explore the demo
               </Link>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-[var(--border-subtle)] bg-surface py-10">
-        <div className="container-app flex flex-col gap-6 text-sm text-ink-secondary sm:flex-row sm:justify-between">
+      <footer
+        className="border-t py-10"
+        style={{ borderColor: "var(--m-border)", background: "var(--m-surface-soft)" }}
+      >
+        <div className="container-marketing flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="font-display text-lg text-ink">SquadRidge</div>
-            <p className="mt-1 max-w-sm text-ink-quiet">
-              Infrastructure for conversations that cannot safely happen in ordinary tools.
+            <p className="text-[16px] font-semibold text-[var(--m-ink)]">SquadRidge</p>
+            <p className="mt-1 max-w-sm text-[14px] leading-relaxed text-[var(--m-ink-secondary)]">
+              A private space for facilitated dialogue and deliberate next steps.
+            </p>
+            <p className="mt-3 text-[12px] text-[var(--m-ink-quiet)]">
+              Prototype preview · sample data only
             </p>
           </div>
-          <div className="flex flex-wrap gap-6">
-            <Link href="/privacy" className="hover:text-ink transition-colors">
+          <div className="flex flex-wrap gap-6 text-[14px] text-[var(--m-ink-secondary)]">
+            <Link href="/privacy" className="hover:text-[var(--m-ink)] transition-colors">
               Privacy
             </Link>
-            <Link href="/security" className="hover:text-ink transition-colors">
+            <Link href="/security" className="hover:text-[var(--m-ink)] transition-colors">
               Security overview
             </Link>
-            <Link href="/enter" className="hover:text-ink transition-colors">
+            <Link href="/enter" className="hover:text-[var(--m-ink)] transition-colors">
               Demo
             </Link>
           </div>
