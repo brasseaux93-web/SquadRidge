@@ -10,8 +10,12 @@ export const SESSION_PHASES: readonly SessionPhase[] = [
 
 export const ROOM_STATUSES: readonly RoomStatus[] = [
   "draft",
+  "scheduled",
+  "waiting",
   "prepared",
   "live",
+  "paused",
+  "safety_review",
   "closing",
   "closed",
 ] as const;
@@ -23,6 +27,13 @@ export const OUTCOME_STATUSES: readonly OutcomeStatus[] = [
   "rejected",
   "revised",
 ] as const;
+
+const OPEN_FOR_DIALOGUE: ReadonlySet<RoomStatus> = new Set([
+  "prepared",
+  "live",
+  "paused",
+  "waiting",
+]);
 
 /** Facilitator may set any phase while room is not closed. */
 export function canSetPhase(
@@ -55,6 +66,21 @@ export function canSendMessage(
 ): { ok: true } | { ok: false; reason: string } {
   if (roomStatus === "closed") {
     return { ok: false, reason: "Room is closed; messages cannot be sent." };
+  }
+  if (roomStatus === "safety_review") {
+    return { ok: false, reason: "Room is in safety review; dialogue is paused." };
+  }
+  if (!OPEN_FOR_DIALOGUE.has(roomStatus) && roomStatus !== "closing") {
+    return { ok: false, reason: `Messages are not accepted while room is ${roomStatus}.` };
+  }
+  return { ok: true };
+}
+
+export function canRaiseSafetyConcern(
+  roomStatus: RoomStatus
+): { ok: true } | { ok: false; reason: string } {
+  if (roomStatus === "closed") {
+    return { ok: false, reason: "Room is closed." };
   }
   return { ok: true };
 }
