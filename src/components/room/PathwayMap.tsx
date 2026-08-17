@@ -1,16 +1,17 @@
 "use client";
 
 import type { RoomStatus, SessionPhase } from "@/domain/types";
+import { SESSION_PHASES } from "@/domain/transitions";
 import { cn } from "@/lib/utils";
 
-const STAGES: { key: SessionPhase | "ledger"; label: string }[] = [
-  { key: "opening", label: "Opening" },
-  { key: "dialogue", label: "Dialogue" },
-  { key: "caucus", label: "Caucus" },
-  { key: "synthesis", label: "Synthesis" },
-  { key: "closing", label: "Closing" },
-  { key: "ledger", label: "Ledger retained" },
-];
+const STAGE_LABELS: Record<SessionPhase | "ledger", string> = {
+  opening: "Opening",
+  dialogue: "Dialogue",
+  caucus: "Caucus",
+  synthesis: "Synthesis",
+  closing: "Closing",
+  ledger: "Ledger retained",
+};
 
 export function PathwayMap({
   current,
@@ -19,10 +20,18 @@ export function PathwayMap({
   current: SessionPhase;
   status: RoomStatus;
 }) {
+  const stages: (SessionPhase | "ledger")[] = [...SESSION_PHASES, "ledger"];
   const currentIdx =
     status === "closed"
-      ? STAGES.length - 1
-      : STAGES.findIndex((s) => s.key === current);
+      ? stages.length - 1
+      : Math.max(0, stages.indexOf(current));
+
+  const nextAction =
+    status === "closed"
+      ? "Review retained outcomes on the ledger. Session chat is not available."
+      : current === "closing"
+        ? "Facilitator may close the room to purge chat and lock the session."
+        : "Facilitator advances phase; participants contribute under assigned roles.";
 
   return (
     <div
@@ -33,12 +42,12 @@ export function PathwayMap({
         Dialogue pathway
       </div>
       <ol className="flex flex-wrap gap-2">
-        {STAGES.map((stage, i) => {
+        {stages.map((stage, i) => {
           const done = i < currentIdx;
           const active = i === currentIdx;
           return (
             <li
-              key={stage.key}
+              key={stage}
               className={cn(
                 "rounded-full border px-3 py-1 text-xs",
                 active && "border-accent bg-accent-muted text-accent",
@@ -49,7 +58,7 @@ export function PathwayMap({
               <span className="sr-only">
                 {active ? "Current: " : done ? "Completed: " : "Upcoming: "}
               </span>
-              {stage.label}
+              {STAGE_LABELS[stage]}
             </li>
           );
         })}
@@ -57,7 +66,7 @@ export function PathwayMap({
       <p className="mt-3 text-xs text-ink-muted">
         {status === "closed"
           ? "Room closed. Session chat purged. Approved commitments remain on the ledger."
-          : `Current phase: ${current}. Facilitator controls progression. Live messages exist only while the room is open.`}
+          : `Current phase: ${STAGE_LABELS[current]}. Responsible: facilitator. Next: ${nextAction}`}
       </p>
     </div>
   );

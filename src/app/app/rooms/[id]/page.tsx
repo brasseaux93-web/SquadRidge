@@ -7,18 +7,12 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { InformationLifecycle } from "@/components/room/InformationLifecycle";
 import { PathwayMap } from "@/components/room/PathwayMap";
 import { useAppStore } from "@/data/store";
+import { SESSION_PHASES } from "@/domain/transitions";
 import type { SessionPhase } from "@/domain/types";
 import { formatDate } from "@/lib/utils";
-
-const PHASES: SessionPhase[] = [
-  "opening",
-  "dialogue",
-  "caucus",
-  "synthesis",
-  "closing",
-];
 
 export default function FacilitatorRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +24,8 @@ export default function FacilitatorRoomPage() {
   const participants = useAppStore((s) => s.getRoomParticipants(id));
   const messages = useAppStore((s) => s.getRoomMessages(id));
   const outcomes = useAppStore((s) => s.getRoomOutcomes(id));
+  const lastError = useAppStore((s) => s.lastError);
+  const clearError = useAppStore((s) => s.clearError);
   const setPhase = useAppStore((s) => s.setPhase);
   const closeRoom = useAppStore((s) => s.closeRoom);
   const sendMessage = useAppStore((s) => s.sendMessage);
@@ -39,6 +35,7 @@ export default function FacilitatorRoomPage() {
   const [draft, setDraft] = useState("");
   const [outcomeDraft, setOutcomeDraft] = useState("");
   const [confirmClose, setConfirmClose] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const facParticipant = useMemo(
     () => participants.find((p) => p.isFacilitator),
@@ -63,9 +60,10 @@ export default function FacilitatorRoomPage() {
 
   const isClosed = room.status === "closed";
 
-  function handleSend() {
+  async function handleSend() {
     if (!draft.trim() || !facParticipant || isClosed) return;
-    sendMessage(
+    setBusy(true);
+    await sendMessage(
       room!.id,
       facParticipant.id,
       facParticipant.displayRole,
@@ -73,17 +71,28 @@ export default function FacilitatorRoomPage() {
       true
     );
     setDraft("");
+    setBusy(false);
   }
 
-  function handlePropose() {
+  async function handlePropose() {
     if (!outcomeDraft.trim() || !facParticipant) return;
-    proposeOutcome(room!.id, outcomeDraft, facParticipant.id);
+    setBusy(true);
+    await proposeOutcome(room!.id, outcomeDraft, facParticipant.id);
     setOutcomeDraft("");
+    setBusy(false);
   }
 
-  function handleClose() {
-    closeRoom(room!.id);
+  async function handleClose() {
+    setBusy(true);
+    await closeRoom(room!.id);
     setConfirmClose(false);
+    setBusy(false);
+  }
+
+  async function handlePhase(p: SessionPhase) {
+    setBusy(true);
+    await setPhase(room!.id, p);
+    setBusy(false);
   }
 
   return (
@@ -100,6 +109,7 @@ export default function FacilitatorRoomPage() {
             <Badge tone={isClosed ? "success" : "accent"}>{room.status}</Badge>
             <Badge>Phase: {room.phase}</Badge>
             <Badge tone="neutral">Invite {room.inviteCode}</Badge>
+            <Badge tone="neutral">You: Facilitator</Badge>
           </div>
         </div>
         {!isClosed && (
@@ -109,10 +119,22 @@ export default function FacilitatorRoomPage() {
         )}
       </div>
 
+      {lastError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
+          {lastError}{" "}
+          <button type="button" className="underline" onClick={clearError}>
+            Dismiss
+          </button>
+        </div>
+      )}
+
       <PathwayMap current={room.phase} status={room.status} />
+      <InformationLifecycle status={room.status} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Dialogue column */}
         <div className="space-y-4">
           <Card className="flex min-h-[420px] flex-col">
             <div className="mb-4 flex items-center justify-between border-b border-white/5 pb-3">
@@ -124,13 +146,13 @@ export default function FacilitatorRoomPage() {
               </span>
             </div>
 
-            <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+            <div className="flex-1 space-y-3 overflow-y-auto pr-1" aria-live="polite">
               <AnimatePresence initial={false}>
                 {messages.length === 0 ? (
                   <p className="text-sm text-ink-muted">
                     {isClosed
                       ? "No session messages are retained after close. Approved outcomes remain on the ledger."
-                      : "No messages yet. Participants will appear under their assigned roles."}
+                      : "No messages yet. Participants appear under assigned roles."}
                   </p>
                 ) : (
                   messages.map((m) => (
@@ -171,7 +193,11 @@ export default function FacilitatorRoomPage() {
                   className="w-full rounded-md border border-white/10 bg-deep px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
                 />
                 <div className="mt-2 flex justify-end">
-                  <Button onClick={handleSend} disabled={!draft.trim()}>
+                  <Button
+                    onClick={handleSend}
+                    disabled={!draft.trim() || busy}
+                    loading={busy}
+                  >
                     Send
                   </Button>
                 </div>
@@ -179,48 +205,62 @@ export default function FacilitatorRoomPage() {
             )}
           </Card>
 
-          {/* Outcome drafting */}
           {!isClosed && (
             <Card>
               <h2 className="text-sm font-medium text-ink">Propose outcome</h2>
               <p className="mt-1 text-xs text-ink-muted">
-                Capture a commitment, owner, or unresolved item for review. Nothing
-                reaches the ledger without your approval.
+                Nothing reaches the ledger without your approval.
               </p>
               <textarea
                 rows={3}
                 value={outcomeDraft}
                 onChange={(e) => setOutcomeDraft(e.target.value)}
-                placeholder="e.g. Bi-weekly technical reviews before production deployments, owned jointly by Engineering and Product."
+                placeholder="e.g. Bi-weekly technical reviews before production deployments."
                 className="mt-3 w-full rounded-md border border-white/10 bg-deep px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
               />
               <div className="mt-2 flex justify-end">
                 <Button
                   variant="subtle"
                   onClick={handlePropose}
-                  disabled={!outcomeDraft.trim()}
+                  disabled={!outcomeDraft.trim() || busy}
                 >
                   Add to review queue
                 </Button>
               </div>
             </Card>
           )}
+
+          {isClosed && (
+            <Card className="border-accent/20">
+              <h2 className="text-sm font-medium text-ink">Room closed</h2>
+              <p className="mt-2 text-sm text-ink-muted">
+                Closed {room.closedAt ? formatDate(room.closedAt) : ""}. Live
+                dialogue was purged from the demo store. Review the{" "}
+                <Link
+                  href={`/app/rooms/${room.id}/outcomes`}
+                  className="text-accent hover:underline"
+                >
+                  outcome ledger
+                </Link>{" "}
+                for retained commitments.
+              </p>
+            </Card>
+          )}
         </div>
 
-        {/* Side column */}
         <div className="space-y-4">
           <Card>
             <h2 className="text-sm font-medium text-ink">Session phase</h2>
             <p className="mt-1 text-xs text-ink-muted">
-              You control pacing. Participants see the current phase.
+              Facilitator-only control. Participants see the current phase.
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {PHASES.map((p) => (
+            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Set phase">
+              {SESSION_PHASES.map((p) => (
                 <button
                   key={p}
                   type="button"
-                  disabled={isClosed}
-                  onClick={() => setPhase(room.id, p)}
+                  disabled={isClosed || busy}
+                  onClick={() => handlePhase(p)}
                   className={`rounded-full border px-3 py-1 text-xs capitalize transition-colors disabled:opacity-40 ${
                     room.phase === p
                       ? "border-accent bg-accent-muted text-accent"
@@ -249,8 +289,7 @@ export default function FacilitatorRoomPage() {
               ))}
             </ul>
             <p className="mt-3 text-xs text-ink-muted">
-              Real names are held outside the room context. In-room identities are
-              facilitator-assigned roles.
+              Real names are held outside the room context.
             </p>
           </Card>
 
@@ -282,38 +321,31 @@ export default function FacilitatorRoomPage() {
                   key={o.id}
                   className="rounded-lg border border-white/8 bg-deep p-3"
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      tone={
-                        o.status === "approved"
-                          ? "success"
-                          : o.status === "rejected"
-                            ? "danger"
-                            : "warning"
-                      }
-                    >
-                      {o.status.replace("_", " ")}
-                    </Badge>
-                  </div>
+                  <Badge
+                    tone={
+                      o.status === "approved"
+                        ? "success"
+                        : o.status === "rejected"
+                          ? "danger"
+                          : "warning"
+                    }
+                  >
+                    {o.status.replace("_", " ")}
+                  </Badge>
                   <p className="mt-2 text-sm text-ink">{o.body}</p>
-                  {o.ownerLabel && (
-                    <p className="mt-1 text-xs text-ink-muted">
-                      Owner: {o.ownerLabel}
-                    </p>
-                  )}
                   {o.status === "proposed" && !isClosed && (
                     <div className="mt-3 flex gap-2">
                       <Button
                         className="min-h-[32px] px-3 py-1 text-xs"
-                        onClick={() =>
-                          setOutcomeStatus(o.id, "approved", user.id)
-                        }
+                        disabled={busy}
+                        onClick={() => setOutcomeStatus(o.id, "approved")}
                       >
                         Approve
                       </Button>
                       <Button
                         variant="ghost"
                         className="min-h-[32px] px-3 py-1 text-xs"
+                        disabled={busy}
                         onClick={() => setOutcomeStatus(o.id, "rejected")}
                       >
                         Reject
@@ -327,7 +359,6 @@ export default function FacilitatorRoomPage() {
         </div>
       </div>
 
-      {/* Close confirmation */}
       <AnimatePresence>
         {confirmClose && (
           <motion.div
@@ -343,21 +374,33 @@ export default function FacilitatorRoomPage() {
               className="w-full max-w-md rounded-xl border border-white/10 bg-surface p-6 shadow-lift"
               initial={reduce ? false : { scale: 0.96, y: 8 }}
               animate={{ scale: 1, y: 0 }}
-              exit={reduce ? undefined : { scale: 0.96, opacity: 0 }}
             >
               <h2 id="close-title" className="font-serif text-xl text-ink">
                 Close room and purge chat?
               </h2>
-              <p className="mt-3 text-sm text-ink-muted">
-                Live session messages will be permanently removed from this demo
-                store. Approved outcome ledger entries will remain. This matches
-                SquadRidge’s minimized-retention design.
-              </p>
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-muted">
+                <li>
+                  <strong className="text-ink">Deleted:</strong> all live session
+                  messages in this demo store for this room.
+                </li>
+                <li>
+                  <strong className="text-ink">Kept:</strong> approved (and other)
+                  outcome ledger entries.
+                </li>
+                <li>
+                  This is an in-browser demonstration of minimized retention—not a
+                  production deletion guarantee.
+                </li>
+              </ul>
               <div className="mt-6 flex justify-end gap-2">
-                <Button variant="ghost" onClick={() => setConfirmClose(false)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setConfirmClose(false)}
+                  disabled={busy}
+                >
                   Cancel
                 </Button>
-                <Button variant="danger" onClick={handleClose}>
+                <Button variant="danger" onClick={handleClose} loading={busy}>
                   Close & purge
                 </Button>
               </div>
