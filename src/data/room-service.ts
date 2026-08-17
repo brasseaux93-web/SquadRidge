@@ -15,7 +15,7 @@ import type {
   SessionPhase,
   User,
 } from "@/domain/types";
-import type { RoomRepository } from "./repository";
+import type { CloseRoomSummary, RoomRepository } from "./repository";
 
 function newId(prefix: string) {
   return `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
@@ -26,8 +26,8 @@ function isFacilitatorRole(user: User): boolean {
 }
 
 /**
- * Application service: authorization + domain rules on top of RoomRepository.
- * All UI mutations should go through this layer.
+ * Application service: UX validation + role checks on top of RoomRepository.
+ * Server RLS/RPCs remain the authority when DATA_ADAPTER=supabase.
  */
 export class RoomService {
   constructor(private repo: RoomRepository) {}
@@ -48,7 +48,6 @@ export class RoomService {
     return this.repo.listMessages(roomId);
   }
 
-  /** Participants only receive approved outcomes; facilitators receive all. */
   async listOutcomesForViewer(
     roomId: string,
     viewer: User
@@ -71,18 +70,24 @@ export class RoomService {
     const check = canSetPhase(room.status, phase);
     if (!check.ok) return fail(check.reason, "INVALID_STATE");
 
-    const updated = await this.repo.updateRoom(roomId, { phase });
-    if (!updated) return fail("Room not found.", "NOT_FOUND");
-
-    await this.repo.appendAudit({
-      id: newId("aud"),
-      roomId,
-      actorId: actor.id,
-      action: "room.phase_changed",
-      metadata: { phase },
-      createdAt: new Date().toISOString(),
-    });
-    return ok(updated);
+    try {
+      const updated = await this.repo.updateRoom(roomId, { phase });
+      if (!updated) return fail("Room not found.", "NOT_FOUND");
+      await this.repo.appendAudit({
+        id: newId("aud"),
+        roomId,
+        actorId: actor.id,
+        action: "room.phase_changed",
+        metadata: { phase },
+        createdAt: new Date().toISOString(),
+      });
+      return ok(updated);
+    } catch (e) {
+      return fail(
+        e instanceof Error ? e.message : "Unable to update phase.",
+        "INVALID_STATE"
+      );
+    }
   }
 
   async sendMessage(
@@ -106,7 +111,10 @@ export class RoomService {
     const members = await this.repo.listParticipants(input.roomId);
     const membership = members.find((m) => m.id === input.participantId);
     if (!membership || membership.userId !== actor.id) {
-      return fail("You are not a member of this room under that identity.", "UNAUTHORIZED");
+      return fail(
+        "You are not a member of this room under that identity.",
+        "UNAUTHORIZED"
+      );
     }
 
     const message: Message = {
@@ -118,16 +126,24 @@ export class RoomService {
       createdAt: new Date().toISOString(),
       isFacilitator: membership.isFacilitator,
     };
-    await this.repo.addMessage(message);
-    await this.repo.appendAudit({
-      id: newId("aud"),
-      roomId: input.roomId,
-      actorId: actor.id,
-      action: "message.sent",
-      metadata: { messageId: message.id },
-      createdAt: new Date().toISOString(),
-    });
-    return ok(message);
+
+    try {
+      await this.repo.addMessage(message);
+      await this.repo.appendAudit({
+        id: newId("aud"),
+        roomId: input.roomId,
+        actorId: actor.id,
+        action: "message.sent",
+        metadata: { messageId: message.id },
+        createdAt: new Date().toISOString(),
+      });
+      return ok(message);
+    } catch (e) {
+      return fail(
+        e instanceof Error ? e.message : "Unable to send message.",
+        "INVALID_STATE"
+      );
+    }
   }
 
   async proposeOutcome(
@@ -141,7 +157,10 @@ export class RoomService {
     }
   ): Promise<Result<OutcomeEntry>> {
     if (!isFacilitatorRole(actor)) {
-      return fail("Only facilitators can propose outcomes in this prototype.", "UNAUTHORIZED");
+      return fail(
+        "Only facilitators can propose outcomes in this prototype.",
+        "UNAUTHORIZED"
+      );
     }
     const body = input.body.trim();
     if (!body) return fail("Outcome text cannot be empty.", "VALIDATION");
@@ -162,16 +181,24 @@ export class RoomService {
       proposedBy: input.proposedByParticipantId,
       createdAt: new Date().toISOString(),
     };
-    await this.repo.addOutcome(entry);
-    await this.repo.appendAudit({
-      id: newId("aud"),
-      roomId: input.roomId,
-      actorId: actor.id,
-      action: "outcome.proposed",
-      metadata: { outcomeId: entry.id },
-      createdAt: new Date().toISOString(),
-    });
-    return ok(entry);
+
+    try {
+      const created = await this.repo.addOutcome(entry);
+      await this.repo.appendAudit({
+        id: newId("aud"),
+        roomId: input.roomId,
+        actorId: actor.id,
+        action: "outcome.proposed",
+        metadata: { outcomeId: created.id },
+        createdAt: new Date().toISOString(),
+      });
+      return ok(created);
+    } catch (e) {
+      return fail(
+        e instanceof Error ? e.message : "Unable to propose outcome.",
+        "INVALID_STATE"
+      );
+    }
   }
 
   async setOutcomeStatus(
@@ -182,64 +209,62 @@ export class RoomService {
     if (!isFacilitatorRole(actor)) {
       return fail("Only facilitators can approve or reject outcomes.", "UNAUTHORIZED");
     }
-    const outcome = await this.repo.getOutcome(outcomeId);
-    if (!outcome) return fail("Outcome not found.", "NOT_FOUND");
 
     if (status === "approved") {
-      const check = canApproveOutcome(outcome.status);
-      if (!check.ok) return fail(check.reason, "INVALID_STATE");
+      try {
+        const updated = await this.repo.approveOutcomeAtomic(outcomeId, actor.id);
+        return ok(updated);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Unable to approve outcome.";
+        if (msg.includes("permission")) return fail(msg, "UNAUTHORIZED");
+        return fail(msg, "INVALID_STATE");
+      }
     }
 
-    const updated = await this.repo.updateOutcome(outcomeId, {
-      status,
-      approvedBy: status === "approved" ? actor.id : outcome.approvedBy,
-      approvedAt:
-        status === "approved" ? new Date().toISOString() : outcome.approvedAt,
-    });
-    if (!updated) return fail("Outcome not found.", "NOT_FOUND");
-
-    await this.repo.appendAudit({
-      id: newId("aud"),
-      roomId: outcome.roomId,
-      actorId: actor.id,
-      action: status === "approved" ? "outcome.approved" : "outcome.rejected",
-      metadata: { outcomeId },
-      createdAt: new Date().toISOString(),
-    });
-    return ok(updated);
+    // Reject remains multi-step on fixture; Supabase blocks direct update — document gap
+    const outcome = await this.repo.getOutcome(outcomeId);
+    if (!outcome) return fail("Outcome not found.", "NOT_FOUND");
+    try {
+      const updated = await this.repo.updateOutcome(outcomeId, {
+        status: "rejected",
+      });
+      if (!updated) return fail("Outcome not found.", "NOT_FOUND");
+      await this.repo.appendAudit({
+        id: newId("aud"),
+        roomId: outcome.roomId,
+        actorId: actor.id,
+        action: "outcome.rejected",
+        metadata: { outcomeId },
+        createdAt: new Date().toISOString(),
+      });
+      return ok(updated);
+    } catch (e) {
+      return fail(
+        e instanceof Error
+          ? e.message
+          : "Reject is not available through the current data adapter.",
+        "NOT_IMPLEMENTED"
+      );
+    }
   }
 
-  /**
-   * Close room and purge messages. Idempotent if already closed.
-   */
-  async closeRoom(actor: User, roomId: string): Promise<Result<Room>> {
+  async closeRoom(
+    actor: User,
+    roomId: string
+  ): Promise<Result<{ room: Room; summary: CloseRoomSummary }>> {
     if (!isFacilitatorRole(actor)) {
       return fail("Only facilitators can close a room.", "UNAUTHORIZED");
     }
-    const room = await this.repo.getRoom(roomId);
-    if (!room) return fail("Room not found.", "NOT_FOUND");
 
-    if (room.status === "closed") {
-      await this.repo.purgeMessages(roomId);
-      return ok(room);
+    try {
+      const summary = await this.repo.closeAndPurge(roomId, actor.id);
+      const room = await this.repo.getRoom(roomId);
+      if (!room) return fail("Room not found.", "NOT_FOUND");
+      return ok({ room, summary });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unable to close room.";
+      if (msg.includes("permission")) return fail(msg, "UNAUTHORIZED");
+      return fail(msg, "INVALID_STATE");
     }
-
-    const updated = await this.repo.updateRoom(roomId, {
-      status: "closed",
-      phase: "closing",
-      closedAt: new Date().toISOString(),
-    });
-    if (!updated) return fail("Room not found.", "NOT_FOUND");
-
-    await this.repo.purgeMessages(roomId);
-    await this.repo.appendAudit({
-      id: newId("aud"),
-      roomId,
-      actorId: actor.id,
-      action: "room.closed",
-      metadata: { purged: true },
-      createdAt: new Date().toISOString(),
-    });
-    return ok(updated);
   }
 }

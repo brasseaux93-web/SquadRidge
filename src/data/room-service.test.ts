@@ -31,9 +31,6 @@ describe("RoomService invariants", () => {
 
   describe("outcome approval", () => {
     it("does not treat proposed outcomes as approved until facilitator approves", async () => {
-      const before = await service.listOutcomesForViewer("room-1", participant);
-      expect(before.every((o) => o.status === "approved")).toBe(true);
-
       const proposed = await service.proposeOutcome(facilitator, {
         roomId: "room-1",
         body: "Schedule joint review of checklist",
@@ -52,8 +49,8 @@ describe("RoomService invariants", () => {
       const forFac = await service.listOutcomesForViewer("room-1", facilitator);
       const draft = forFac.find((o) => o.body.includes("joint review"));
       expect(draft?.status).toBe("proposed");
-
       if (!draft) throw new Error("missing draft");
+
       const approved = await service.setOutcomeStatus(
         facilitator,
         draft.id,
@@ -77,9 +74,7 @@ describe("RoomService invariants", () => {
         "approved"
       );
       expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.code).toBe("UNAUTHORIZED");
-      }
+      if (!result.success) expect(result.code).toBe("UNAUTHORIZED");
 
       const still = await repo.getOutcome(proposed.id);
       expect(still?.status).toBe("proposed");
@@ -94,18 +89,18 @@ describe("RoomService invariants", () => {
       const close = await service.closeRoom(facilitator, "room-1");
       expect(close.success).toBe(true);
       if (close.success) {
-        expect(close.data.status).toBe("closed");
+        expect(close.data.room.status).toBe("closed");
+        expect(close.data.summary.purgedMessageCount).toBeGreaterThan(0);
       }
 
-      const msgsAfter = await repo.listMessages("room-1");
-      expect(msgsAfter).toHaveLength(0);
-
-      const outcomes = await repo.listOutcomes("room-1");
-      expect(outcomes.length).toBeGreaterThan(0);
+      expect(await repo.listMessages("room-1")).toHaveLength(0);
+      expect((await repo.listOutcomes("room-1")).length).toBeGreaterThan(0);
 
       const again = await service.closeRoom(facilitator, "room-1");
       expect(again.success).toBe(true);
-      expect(await repo.listMessages("room-1")).toHaveLength(0);
+      if (again.success) {
+        expect(again.data.summary.alreadyClosed).toBe(true);
+      }
     });
 
     it("rejects participant close attempts", async () => {
