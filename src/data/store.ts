@@ -214,7 +214,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     const user = get().currentUser;
     const all = get().outcomes.filter((o) => o.roomId === roomId);
     if (!user) return [];
-    if (user.role === "facilitator" || user.role === "admin") return all;
+    if (
+      user.role === "facilitator" ||
+      user.role === "organization_admin" ||
+      user.role === "platform_admin"
+    ) {
+      return all;
+    }
     return all.filter((o) => o.status === "approved");
   },
 }));
