@@ -119,6 +119,9 @@ function mapRpcError(err: { message?: string; code?: string }): Error {
   if (msg.includes("outcome_not_approvable")) {
     return new Error("This outcome cannot be approved in its current state.");
   }
+  if (msg.includes("outcome_already_approved")) {
+    return new Error("Approved outcomes cannot be rejected.");
+  }
   if (msg.includes("outcome_not_found") || msg.includes("room_not_found")) {
     return new Error("The requested record was not found.");
   }
@@ -144,7 +147,6 @@ export class SupabaseRoomRepository implements RoomRepository {
   }
 
   async listUsers(): Promise<User[]> {
-    // Profiles for other users are not enumerable under RLS.
     const { data: session } = await this.client.auth.getUser();
     if (!session.user) return [];
     const me = await this.getUser(session.user.id);
@@ -186,7 +188,6 @@ export class SupabaseRoomRepository implements RoomRepository {
     id: string,
     patch: Partial<Pick<Room, "status" | "phase" | "closedAt">>
   ): Promise<Room | null> {
-    // Phase updates only — closure must use closeAndPurge RPC.
     if (patch.status === "closed") {
       throw new Error("Use closeAndPurge to close rooms.");
     }
@@ -219,10 +220,7 @@ export class SupabaseRoomRepository implements RoomRepository {
       .select("*")
       .eq("room_id", roomId)
       .order("created_at", { ascending: true });
-    if (error) {
-      // Closed rooms: policy returns no rows / error — treat as empty
-      return [];
-    }
+    if (error) return [];
     return (data as DbMessage[]).map(mapMessage);
   }
 
@@ -230,11 +228,6 @@ export class SupabaseRoomRepository implements RoomRepository {
     const { data, error } = await this.client
       .from("room_messages")
       .insert({
-        id: message.id.match(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-        )
-          ? message.id
-          : undefined,
         room_id: message.roomId,
         membership_id: message.participantId,
         display_role: message.displayRole,
@@ -252,7 +245,6 @@ export class SupabaseRoomRepository implements RoomRepository {
   }
 
   async listOutcomes(roomId: string): Promise<OutcomeEntry[]> {
-    // RLS already filters proposed outcomes from participants
     const { data, error } = await this.client
       .from("outcomes")
       .select("*")
@@ -289,11 +281,21 @@ export class SupabaseRoomRepository implements RoomRepository {
   }
 
   async updateOutcome(): Promise<OutcomeEntry | null> {
-    throw new Error("Outcome status changes must use approveOutcomeAtomic RPC.");
+    throw new Error(
+      "Outcome status changes must use approveOutcomeAtomic or rejectOutcomeAtomic RPCs."
+    );
   }
 
   async approveOutcomeAtomic(outcomeId: string): Promise<OutcomeEntry> {
     const { data, error } = await this.client.rpc("approve_outcome", {
+      p_outcome_id: outcomeId,
+    });
+    if (error) throw mapRpcError(error);
+    return mapOutcome(data as DbOutcome);
+  }
+
+  async rejectOutcomeAtomic(outcomeId: string): Promise<OutcomeEntry> {
+    const { data, error } = await this.client.rpc("reject_outcome", {
       p_outcome_id: outcomeId,
     });
     if (error) throw mapRpcError(error);

@@ -119,7 +119,7 @@ export class FixtureRoomRepository implements RoomRepository {
   async approveOutcomeAtomic(outcomeId: string, actorId: string) {
     const o = await this.getOutcome(outcomeId);
     if (!o) throw new Error("outcome_not_found");
-    if (!['proposed', 'under_review', 'revised'].includes(o.status)) {
+    if (!["proposed", "under_review", "revised"].includes(o.status)) {
       throw new Error("outcome_not_approvable");
     }
     const room = await this.getRoom(o.roomId);
@@ -141,11 +141,31 @@ export class FixtureRoomRepository implements RoomRepository {
     return updated;
   }
 
+  async rejectOutcomeAtomic(outcomeId: string, actorId: string) {
+    const o = await this.getOutcome(outcomeId);
+    if (!o) throw new Error("outcome_not_found");
+    if (o.status === "approved") throw new Error("outcome_already_approved");
+    if (o.status === "rejected") return o;
+    const room = await this.getRoom(o.roomId);
+    if (!room || room.status === "closed") throw new Error("room_closed");
+    const updated = await this.updateOutcome(outcomeId, { status: "rejected" });
+    if (!updated) throw new Error("outcome_not_found");
+    await this.appendAudit({
+      id: `aud-${crypto.randomUUID().slice(0, 8)}`,
+      roomId: o.roomId,
+      actorId,
+      action: "outcome.rejected",
+      metadata: { outcomeId },
+      createdAt: new Date().toISOString(),
+    });
+    return updated;
+  }
+
   async closeAndPurge(roomId: string, actorId: string): Promise<CloseRoomSummary> {
     const room = await this.getRoom(roomId);
     if (!room) throw new Error("room_not_found");
 
-    let alreadyClosed = room.status === "closed";
+    const alreadyClosed = room.status === "closed";
     if (!alreadyClosed) {
       await this.updateRoom(roomId, {
         status: "closed",

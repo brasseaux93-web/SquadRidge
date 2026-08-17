@@ -47,18 +47,16 @@ export interface RoomRepository {
     >
   ): Promise<OutcomeEntry | null>;
 
-  /**
-   * Atomic approve — fixture applies domain rules; Supabase calls approve_outcome RPC.
-   * Caller must still enforce facilitator checks in RoomService for fixture consistency.
-   */
   approveOutcomeAtomic(
     outcomeId: string,
     actorId: string
   ): Promise<OutcomeEntry>;
 
-  /**
-   * Atomic close + purge — fixture or close_room RPC.
-   */
+  rejectOutcomeAtomic(
+    outcomeId: string,
+    actorId: string
+  ): Promise<OutcomeEntry>;
+
   closeAndPurge(roomId: string, actorId: string): Promise<CloseRoomSummary>;
 
   appendAudit(event: AuditEvent): Promise<void>;

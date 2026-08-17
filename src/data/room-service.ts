@@ -1,5 +1,4 @@
 import {
-  canApproveOutcome,
   canSendMessage,
   canSetPhase,
   fail,
@@ -210,41 +209,17 @@ export class RoomService {
       return fail("Only facilitators can approve or reject outcomes.", "UNAUTHORIZED");
     }
 
-    if (status === "approved") {
-      try {
+    try {
+      if (status === "approved") {
         const updated = await this.repo.approveOutcomeAtomic(outcomeId, actor.id);
         return ok(updated);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "Unable to approve outcome.";
-        if (msg.includes("permission")) return fail(msg, "UNAUTHORIZED");
-        return fail(msg, "INVALID_STATE");
       }
-    }
-
-    // Reject remains multi-step on fixture; Supabase blocks direct update — document gap
-    const outcome = await this.repo.getOutcome(outcomeId);
-    if (!outcome) return fail("Outcome not found.", "NOT_FOUND");
-    try {
-      const updated = await this.repo.updateOutcome(outcomeId, {
-        status: "rejected",
-      });
-      if (!updated) return fail("Outcome not found.", "NOT_FOUND");
-      await this.repo.appendAudit({
-        id: newId("aud"),
-        roomId: outcome.roomId,
-        actorId: actor.id,
-        action: "outcome.rejected",
-        metadata: { outcomeId },
-        createdAt: new Date().toISOString(),
-      });
+      const updated = await this.repo.rejectOutcomeAtomic(outcomeId, actor.id);
       return ok(updated);
     } catch (e) {
-      return fail(
-        e instanceof Error
-          ? e.message
-          : "Reject is not available through the current data adapter.",
-        "NOT_IMPLEMENTED"
-      );
+      const msg = e instanceof Error ? e.message : "Unable to update outcome.";
+      if (msg.includes("permission")) return fail(msg, "UNAUTHORIZED");
+      return fail(msg, "INVALID_STATE");
     }
   }
 

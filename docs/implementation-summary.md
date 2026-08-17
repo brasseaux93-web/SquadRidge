@@ -1,39 +1,31 @@
 # Implementation summary
 
-**Updated:** 2026-08-16 (server-side security milestone)
+**Updated:** 2026-08-16 (seed + reject_outcome + integration tests)
 
-## Completed this milestone
+## Server-side security stack (in repo)
 
-| Deliverable | Location |
-|-------------|----------|
-| Security plan | `docs/server-side-security-milestone-plan.md` |
-| SQL migration (tables, RLS, helpers, RPCs) | `supabase/migrations/20260817000000_squadridge_core.sql` |
-| Local Supabase config | `supabase/config.toml` |
-| `approve_outcome` / `close_room` RPCs | migration (SECURITY DEFINER, auth.uid checks, fixed search_path) |
-| `SupabaseRoomRepository` | `src/data/supabase-repository.ts` |
-| Atomic close/approve on repository + service | `closeAndPurge`, `approveOutcomeAtomic` |
-| Fixture unit tests updated | `src/data/room-service.test.ts` |
-| Integration harness (skipped by default) | `src/data/supabase.integration.test.ts` |
-| RLS verification matrix | `docs/rls-verification.md` |
-| `.env.example` | repo root |
+| Piece | Path |
+|-------|------|
+| Core schema + RLS + approve/close RPCs | `supabase/migrations/20260817000000_squadridge_core.sql` |
+| reject_outcome RPC | `supabase/migrations/20260817000100_reject_outcome.sql` |
+| Local seed (3 users, 1 room, messages, outcomes) | `supabase/seed.sql` |
+| Integration tests | `src/data/supabase.integration.test.ts` |
+| Supabase adapter | `src/data/supabase-repository.ts` |
+| Fixture demo | `src/data/fixture-repository.ts` |
 
-## Fixture vs server behavior
+## Lifecycle RPCs
 
-| Concern | Fixture | Supabase (when configured) |
-|---------|---------|----------------------------|
-| Authorization | `RoomService` role checks | RLS + RPC `auth.uid()` |
-| Approve outcome | `approveOutcomeAtomic` in memory | `rpc('approve_outcome')` |
-| Close + purge | in-memory delete messages | transactional `close_room` |
-| Participant outcome visibility | filtered in service | RLS `status = approved` |
+- `approve_outcome(uuid)` — facilitator, open room, approvable status, audit
+- `reject_outcome(uuid)` — facilitator, open room, not already approved, idempotent if rejected
+- `close_room(uuid)` — facilitator, purge messages, keep outcomes, one closure audit, idempotent
 
-## Deferred / not verified in agent environment
+## Still required on a developer machine
 
-- Applying migrations to a running Postgres
-- Seeding auth users and memberships
-- Executing RLS integration tests against real JWTs
-- Supabase Auth UI / session wiring in Next.js
-- `reject_outcome` RPC (reject still fixture-oriented; Supabase blocks direct UPDATE)
+1. `npx supabase start && npx supabase db reset`
+2. Run `SUPABASE_INTEGRATION=1 npm test -- src/data/supabase.integration.test.ts`
+3. Record results in `docs/rls-verification.md`
+4. Wire Next.js session (`@supabase/ssr`) when moving off demo `enterAs`
 
 ## Highest-leverage next milestone
 
-Wire Next.js Supabase Auth session, seed script for local facilitator/participant users, and **run** the RLS integration suite until every row in `docs/rls-verification.md` is marked executed with pass/fail evidence.
+Execute the integration suite against local Supabase and publish pass evidence; then replace demo role picker with real auth sessions while keeping display-role separation in-room.
