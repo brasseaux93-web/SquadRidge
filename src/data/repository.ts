@@ -4,6 +4,7 @@ import type {
   OutcomeEntry,
   Room,
   RoomParticipant,
+  SafetyReport,
   User,
 } from "@/domain/types";
 
@@ -58,6 +59,9 @@ export interface RoomRepository {
   ): Promise<OutcomeEntry>;
 
   closeAndPurge(roomId: string, actorId: string): Promise<CloseRoomSummary>;
+
+  listSafetyReports(roomId: string): Promise<SafetyReport[]>;
+  addSafetyReport(report: SafetyReport): Promise<SafetyReport>;
 
   appendAudit(event: AuditEvent): Promise<void>;
   listAudit(roomId?: string): Promise<AuditEvent[]>;

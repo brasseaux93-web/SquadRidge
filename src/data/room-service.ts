@@ -11,6 +11,8 @@ import type {
   OutcomeStatus,
   Room,
   RoomParticipant,
+  SafetyCategory,
+  SafetyReport,
   SessionPhase,
   User,
 } from "@/domain/types";
@@ -26,6 +28,22 @@ function isFacilitatorRole(user: User): boolean {
     user.role === "organization_admin" ||
     user.role === "platform_admin"
   );
+}
+
+function mapPauseIntentToCategory(
+  intent: "pause" | "support" | "concern" | "step_away"
+): SafetyCategory {
+  switch (intent) {
+    case "pause":
+    case "step_away":
+      return "pause_request";
+    case "support":
+      return "other";
+    case "concern":
+      return "concern";
+    default:
+      return "other";
+  }
 }
 
 /**
@@ -58,6 +76,83 @@ export class RoomService {
     const all = await this.repo.listOutcomes(roomId);
     if (isFacilitatorRole(viewer)) return all;
     return all.filter((o) => o.status === "approved");
+  }
+
+  async listSafetyReports(roomId: string): Promise<SafetyReport[]> {
+    return this.repo.listSafetyReports(roomId);
+  }
+
+  async reportSafety(
+    actor: User,
+    input: {
+      roomId: string;
+      intent: "pause" | "support" | "concern" | "step_away";
+      note: string;
+      membershipId?: string;
+    }
+  ): Promise<Result<SafetyReport>> {
+    const room = await this.repo.getRoom(input.roomId);
+    if (!room) return fail("Room not found.", "NOT_FOUND");
+    if (room.status === "closed") {
+      return fail("Cannot file a safety request on a closed room.", "INVALID_STATE");
+    }
+
+    const members = await this.repo.listParticipants(input.roomId);
+    const membership =
+      members.find((m) => m.userId === actor.id) ??
+      (input.membershipId
+        ? members.find((m) => m.id === input.membershipId)
+        : undefined);
+
+    if (!membership) {
+      return fail("You are not a member of this room.", "UNAUTHORIZED");
+    }
+
+    const report: SafetyReport = {
+      id: newId("sr"),
+      roomId: input.roomId,
+      reporterMembershipId: membership.id,
+      category: mapPauseIntentToCategory(input.intent),
+      note: input.note.trim() || `(${input.intent})`,
+      status: "open",
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const created = await this.repo.addSafetyReport(report);
+      await this.repo.appendAudit({
+        id: newId("aud"),
+        roomId: input.roomId,
+        actorId: actor.id,
+        action: "safety.reported",
+        metadata: {
+          reportId: created.id,
+          category: created.category,
+          intent: input.intent,
+        },
+        createdAt: new Date().toISOString(),
+      });
+
+      // Soft signal: mark room paused on explicit pause requests (fixture behavior).
+      if (input.intent === "pause" && room.status === "live") {
+        await this.repo.updateRoom(input.roomId, { status: "paused" });
+        await this.repo.appendAudit({
+          id: newId("aud"),
+          roomId: input.roomId,
+          actorId: actor.id,
+          action: "room.paused",
+          metadata: { reason: "safety.pause_request" },
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      return ok(created);
+    } catch (e) {
+      return fail(
+        e instanceof Error ? e.message : "Unable to record safety request.",
+        "INVALID_STATE"
+      );
+    }
   }
 
   async setPhase(

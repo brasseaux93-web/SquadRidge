@@ -6,6 +6,7 @@ import type {
   OutcomeEntry,
   Room,
   RoomParticipant,
+  SafetyReport,
   SessionPhase,
   User,
   UserRole,
@@ -30,6 +31,7 @@ interface AppState {
   participants: RoomParticipant[];
   messages: Message[];
   outcomes: OutcomeEntry[];
+  safetyReports: SafetyReport[];
   lastError: string | null;
 
   enterAs: (role: UserRole) => void;
@@ -59,16 +61,25 @@ interface AppState {
     outcomeId: string,
     status: "approved" | "rejected"
   ) => Promise<boolean>;
+  reportSafety: (
+    roomId: string,
+    intent: "pause" | "support" | "concern" | "step_away",
+    note: string
+  ) => Promise<boolean>;
 
   getRoom: (id: string) => Room | undefined;
   getRoomParticipants: (roomId: string) => RoomParticipant[];
   getRoomMessages: (roomId: string) => Message[];
   getRoomOutcomes: (roomId: string) => OutcomeEntry[];
+  getRoomSafetyReports: (roomId: string) => SafetyReport[];
   getOutcomesForCurrentUser: (roomId: string) => OutcomeEntry[];
 }
 
 async function snapshot(): Promise<
-  Pick<AppState, "rooms" | "participants" | "messages" | "outcomes">
+  Pick<
+    AppState,
+    "rooms" | "participants" | "messages" | "outcomes" | "safetyReports"
+  >
 > {
   const rooms = await fixtureRepo.listRooms();
   const participants = (
@@ -80,7 +91,10 @@ async function snapshot(): Promise<
   const outcomes = (
     await Promise.all(rooms.map((r) => fixtureRepo.listOutcomes(r.id)))
   ).flat();
-  return { rooms, participants, messages, outcomes };
+  const safetyReports = (
+    await Promise.all(rooms.map((r) => fixtureRepo.listSafetyReports(r.id)))
+  ).flat();
+  return { rooms, participants, messages, outcomes, safetyReports };
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -89,6 +103,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   participants: DEMO_PARTICIPANTS,
   messages: DEMO_MESSAGES,
   outcomes: DEMO_OUTCOMES,
+  safetyReports: [],
   lastError: null,
 
   enterAs: (role) => {
@@ -203,6 +218,22 @@ export const useAppStore = create<AppState>((set, get) => ({
     return true;
   },
 
+  reportSafety: async (roomId, intent, note) => {
+    const actor = get().currentUser;
+    if (!actor) {
+      set({ lastError: "Not signed in." });
+      return false;
+    }
+    const result = await service.reportSafety(actor, { roomId, intent, note });
+    if (!result.success) {
+      set({ lastError: result.error });
+      return false;
+    }
+    await get().refresh();
+    set({ lastError: null });
+    return true;
+  },
+
   getRoom: (id) => get().rooms.find((r) => r.id === id),
   getRoomParticipants: (roomId) =>
     get().participants.filter((p) => p.roomId === roomId),
@@ -210,6 +241,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     get().messages.filter((m) => m.roomId === roomId),
   getRoomOutcomes: (roomId) =>
     get().outcomes.filter((o) => o.roomId === roomId),
+  getRoomSafetyReports: (roomId) =>
+    get().safetyReports.filter((r) => r.roomId === roomId),
   getOutcomesForCurrentUser: (roomId) => {
     const user = get().currentUser;
     const all = get().outcomes.filter((o) => o.roomId === roomId);

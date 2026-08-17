@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/Button";
 import { useAppStore } from "@/data/store";
 import { cn } from "@/lib/utils";
-
-const nav = [{ href: "/app", label: "Rooms" }];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const user = useAppStore((s) => s.currentUser);
@@ -21,8 +18,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return (
-      <div className="flex min-h-[50dvh] items-center justify-center text-ink-secondary">
-        Checking session…
+      <div className="flex min-h-[50dvh] items-center justify-center text-[14px] text-ink-quiet">
+        Preparing workspace…
       </div>
     );
   }
@@ -31,45 +28,47 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-canvas/90 backdrop-blur-md">
         <div className="container-app flex h-14 items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <Link href="/app" className="font-display text-xl tracking-tight text-ink">
+          <div className="flex items-center gap-8">
+            <Link
+              href="/app"
+              className="text-[15px] font-semibold tracking-tight text-ink"
+            >
               SquadRidge
             </Link>
-            <nav className="flex gap-1">
-              {nav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-sm transition-colors",
-                    pathname === item.href || pathname.startsWith(item.href + "/")
-                      ? "bg-white/[0.06] text-ink"
-                      : "text-ink-secondary hover:text-ink"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <nav className="flex gap-1" aria-label="Workspace">
+              <Link
+                href="/app"
+                className={cn(
+                  "rounded-[10px] px-3 py-1.5 text-[13px] transition-colors",
+                  pathname === "/app" || pathname.startsWith("/app/rooms")
+                    ? "bg-white/[0.06] text-ink"
+                    : "text-ink-secondary hover:text-ink"
+                )}
+              >
+                Rooms
+              </Link>
             </nav>
           </div>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-4 text-[13px]">
             <span className="hidden text-ink-quiet sm:inline">
-              {user.name} · {user.role}
+              {user.name}
+              <span className="mx-1.5 opacity-40">·</span>
+              <span className="capitalize">{user.role}</span>
             </span>
-            <Button
-              variant="ghost"
-              className="min-h-[34px] px-3 py-1 text-xs"
+            <button
+              type="button"
+              className="rounded-[10px] border border-[var(--border-default)] px-3 py-1.5 text-[13px] text-ink-secondary transition-colors hover:border-[var(--border-strong)] hover:text-ink"
               onClick={() => {
                 signOut();
                 router.push("/enter");
               }}
             >
               Sign out
-            </Button>
+            </button>
           </div>
         </div>
       </header>
-      <main className="container-app py-8">{children}</main>
+      <main className="container-app py-10">{children}</main>
     </div>
   );
 }

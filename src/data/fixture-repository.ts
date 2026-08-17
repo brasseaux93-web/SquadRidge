@@ -4,6 +4,7 @@ import type {
   OutcomeEntry,
   Room,
   RoomParticipant,
+  SafetyReport,
   User,
 } from "@/domain/types";
 import type { CloseRoomSummary, RoomRepository } from "./repository";
@@ -21,6 +22,7 @@ export interface FixtureState {
   participants: RoomParticipant[];
   messages: Message[];
   outcomes: OutcomeEntry[];
+  safetyReports: SafetyReport[];
   audit: AuditEvent[];
 }
 
@@ -31,6 +33,7 @@ export function createInitialFixtureState(): FixtureState {
     participants: structuredClone(DEMO_PARTICIPANTS),
     messages: structuredClone(DEMO_MESSAGES),
     outcomes: structuredClone(DEMO_OUTCOMES),
+    safetyReports: [],
     audit: [],
   };
 }
@@ -196,6 +199,15 @@ export class FixtureRoomRepository implements RoomRepository {
       purgedMessageCount: purged,
       retainedApprovedOutcomeCount: approved,
     };
+  }
+
+  async listSafetyReports(roomId: string) {
+    return this.state.safetyReports.filter((r) => r.roomId === roomId);
+  }
+
+  async addSafetyReport(report: SafetyReport) {
+    this.state.safetyReports.push(report);
+    return report;
   }
 
   async appendAudit(event: AuditEvent) {
