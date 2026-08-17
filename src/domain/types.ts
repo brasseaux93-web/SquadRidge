@@ -87,3 +87,21 @@ export interface RoomSummary {
   openOutcomes: number;
   approvedOutcomes: number;
 }
+
+export type AuditAction =
+  | "room.phase_changed"
+  | "room.closed"
+  | "message.sent"
+  | "outcome.proposed"
+  | "outcome.approved"
+  | "outcome.rejected";
+
+export interface AuditEvent {
+  id: string;
+  roomId?: string;
+  actorId: string;
+  action: AuditAction;
+  /** Must not include raw message bodies */
+  metadata?: Record<string, string | number | boolean | null>;
+  createdAt: string;
+}
