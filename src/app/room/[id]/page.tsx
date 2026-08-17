@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { InformationLifecycle } from "@/components/room/InformationLifecycle";
 import { PathwayMap } from "@/components/room/PathwayMap";
 import { useAppStore } from "@/data/store";
 import { formatDate } from "@/lib/utils";
@@ -20,12 +21,13 @@ export default function ParticipantRoomPage() {
   const room = useAppStore((s) => s.getRoom(id));
   const participants = useAppStore((s) => s.getRoomParticipants(id));
   const messages = useAppStore((s) => s.getRoomMessages(id));
-  const outcomes = useAppStore((s) =>
-    s.getRoomOutcomes(id).filter((o) => o.status === "approved")
-  );
+  const outcomes = useAppStore((s) => s.getOutcomesForCurrentUser(id));
+  const lastError = useAppStore((s) => s.lastError);
+  const clearError = useAppStore((s) => s.clearError);
   const sendMessage = useAppStore((s) => s.sendMessage);
 
   const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const myParticipation = useMemo(() => {
     if (!user) return undefined;
@@ -53,9 +55,10 @@ export default function ParticipantRoomPage() {
   const isClosed = room.status === "closed";
   const displayRole = myParticipation?.displayRole ?? "Participant";
 
-  function handleSend() {
+  async function handleSend() {
     if (!draft.trim() || !myParticipation || isClosed) return;
-    sendMessage(
+    setBusy(true);
+    await sendMessage(
       room!.id,
       myParticipation.id,
       myParticipation.displayRole,
@@ -63,6 +66,7 @@ export default function ParticipantRoomPage() {
       false
     );
     setDraft("");
+    setBusy(false);
   }
 
   return (
@@ -89,15 +93,29 @@ export default function ParticipantRoomPage() {
           <div className="mt-2 flex flex-wrap gap-2">
             <Badge tone={isClosed ? "success" : "accent"}>{room.status}</Badge>
             <Badge>Phase: {room.phase}</Badge>
+            <Badge tone="neutral">Role: participant</Badge>
           </div>
           <p className="mt-3 max-w-prose text-sm text-ink-muted">
-            Your real name is not shown in this room. You are participating as{" "}
-            {displayRole}. Live messages are not kept after the facilitator closes
-            the session.
+            Your real name is not shown in this room. Live messages are not kept
+            after the facilitator closes the session. You only see approved
+            commitments on the ledger.
           </p>
         </div>
 
+        {lastError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
+          >
+            {lastError}{" "}
+            <button type="button" className="underline" onClick={clearError}>
+              Dismiss
+            </button>
+          </div>
+        )}
+
         <PathwayMap current={room.phase} status={room.status} />
+        <InformationLifecycle status={room.status} />
 
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           <Card className="flex min-h-[400px] flex-col">
@@ -108,7 +126,7 @@ export default function ParticipantRoomPage() {
               </span>
             </div>
 
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-3" aria-live="polite">
               <AnimatePresence initial={false}>
                 {messages.length === 0 ? (
                   <p className="text-sm text-ink-muted">
@@ -143,7 +161,11 @@ export default function ParticipantRoomPage() {
 
             {!isClosed && myParticipation && (
               <div className="mt-4 border-t border-white/5 pt-4">
+                <label className="sr-only" htmlFor="part-msg">
+                  Your message
+                </label>
                 <textarea
+                  id="part-msg"
                   rows={2}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -151,7 +173,11 @@ export default function ParticipantRoomPage() {
                   className="w-full rounded-md border border-white/10 bg-deep px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
                 />
                 <div className="mt-2 flex justify-end">
-                  <Button onClick={handleSend} disabled={!draft.trim()}>
+                  <Button
+                    onClick={handleSend}
+                    disabled={!draft.trim() || busy}
+                    loading={busy}
+                  >
                     Send
                   </Button>
                 </div>
@@ -174,7 +200,8 @@ export default function ParticipantRoomPage() {
                 Approved commitments
               </h2>
               <p className="mt-1 text-xs text-ink-muted">
-                Only facilitator-approved items appear here.
+                Only facilitator-approved items appear here. Proposed items are
+                not shown to participants.
               </p>
               <div className="mt-3 space-y-2">
                 {outcomes.length === 0 && (

@@ -1,68 +1,64 @@
 # Implementation summary
 
-**Date:** 2026-08-16  
+**Updated:** 2026-08-16 (next-pass)  
 **Source audited:** `brasseaux93-web/squadridge-astro`  
 **Destination:** `brasseaux93-web/SquadRidge`
 
 ---
 
-## What was carried over from the source product vision
+## Implemented behavior (this codebase)
 
-- Core thesis: private facilitated dialogue + durable approved outcomes only
-- Three-step arc: prepare → guide → approve (then purge)
-- Role-based in-room identities vs verified identity outside the room
-- Facilitator control of process (phases, outcomes, close)
-- Explicit rejection of participant scoring / session-text training narratives
-- Visual language: deep neutrals, sage accent `#6A8A83`, serif headings, calm institutional tone
-- Honest privacy disclaimers (screenshots cannot be prevented; prototype is not production security)
-
----
-
-## What was improved beyond the marketing site
-
-| Area | Improvement |
-|------|-------------|
-| **Architecture** | Real app shell with role-aware routes instead of a single static page |
-| **Domain model** | Strict TypeScript types for Room, Message, Outcome, phases, statuses |
-| **Workflows** | Runnable room lifecycle including message purge on close |
-| **IA** | Facilitator dashboard, room workspace, participant view, ledger detail |
-| **Visualization** | Dialogue pathway map (stage-based, not a vanity progress bar) |
-| **Motion** | Framer Motion with reduced-motion support |
-| **Trust UX** | Demo mode banner; plain-language confirmations for consequential actions |
-| **Data boundary** | Zustand + fixtures isolated so screens do not hard-code data shape |
+| Capability | Status |
+|------------|--------|
+| Public product story + demo role entry | Yes |
+| Facilitator room list and workspace | Yes |
+| Participant room view (display roles) | Yes |
+| Phase control (facilitator) | Yes — service-enforced |
+| Dialogue send (members) | Yes — blocked when closed |
+| Propose / approve / reject outcomes | Yes — approve/reject facilitator-only |
+| Participant sees approved outcomes only | Yes — service + store selector |
+| Close room + purge messages (fixture) | Yes — service-enforced, idempotent |
+| Pathway + information lifecycle UI | Yes |
+| RoomRepository + RoomService boundary | Yes |
+| Fixture adapter | Yes |
+| Supabase adapter | Skeleton only (throws) |
+| Automated tests for invariants | Yes (`npm test`) |
+| Real IdP / DB / realtime / RLS | **No** |
 
 ---
 
-## Placeholders / adapters remaining
+## Carried from product vision
 
-- Authentication is a demo role picker, not identity verification
-- No network encryption or server-side purge guarantees
-- No multi-user realtime sync (single-browser store)
-- Facilitator Assist AI is not connected; outcome drafting is manual
-- Legal pages describe design intent and prototype limits only
-- Tests and CI not yet configured
-
----
-
-## Highest-priority next steps
-
-1. Wire a real backend (rooms, participants, outcomes) with RLS and audit log for ledger actions.
-2. Implement invite tokens and email/SMS delivery for participants.
-3. Add automated tests for close/purge, outcome approval, and role-gated routes.
-4. Replace demo auth with an IdP while preserving display-role separation in the room.
-5. Optional: offline-tolerant draft buffers for facilitators before network submit.
+- Private facilitated dialogue; durable approved outcomes only
+- Role-based in-room identities
+- Facilitator authority over phases and ledger
+- No participant scoring
+- Honest demo / non-production security labeling
 
 ---
 
-## Definition of done checklist
+## Next-pass engineering changes
 
-- [x] Source audited and documented
-- [x] Essential audited flows implemented (role entry, room phases, dialogue, outcomes, purge)
-- [x] Unified visual system and navigation model
-- [x] Loading/empty/permission/demo states handled intentionally
-- [x] Framer Motion with reduced-motion respect
-- [x] Pathway visualization with text alternative
-- [x] README with setup, architecture, limitations
-- [x] Implementation summary
-- [ ] Full automated test suite (next iteration)
-- [ ] Production auth + persistence (next iteration)
+1. Extracted `RoomRepository` + `RoomService` with authorization codes
+2. Domain transition helpers (`canSetPhase`, `canApproveOutcome`, …)
+3. Vitest suite for approval, purge, roles, phases, messaging
+4. Docs: next-pass plan, data lifecycle, Supabase schema proposal
+5. Information lifecycle visualization; stronger close confirmation copy
+6. Async store mutations with `lastError` surfacing
+
+---
+
+## Production integration steps (ordered)
+
+1. Deploy schema from `docs/supabase-schema-proposal.md` with RLS
+2. Implement `close_room` and `approve_outcome` as security-definer SQL/RPC
+3. Wire `SupabaseRoomRepository` via **server** routes only; keep service role server-side
+4. Replace demo `enterAs` with real auth; map memberships to display roles
+5. Add invite token redemption
+6. Expand tests against a local Supabase test project
+
+---
+
+## Recommended next milestone
+
+**Highest leverage:** implement server-side `close_room` + message DELETE under RLS and prove participant SELECT policies on `outcomes` (`status = approved` only). Until then, treat all data as non-sensitive demo content.
