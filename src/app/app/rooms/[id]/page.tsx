@@ -27,6 +27,7 @@ export default function FacilitatorRoomPage() {
   const participants = useAppStore((s) => s.getRoomParticipants(id));
   const messages = useAppStore((s) => s.getRoomMessages(id));
   const outcomes = useAppStore((s) => s.getRoomOutcomes(id));
+  const safetyReports = useAppStore((s) => s.getRoomSafetyReports(id));
   const lastError = useAppStore((s) => s.lastError);
   const clearError = useAppStore((s) => s.clearError);
   const setPhase = useAppStore((s) => s.setPhase);
@@ -34,6 +35,7 @@ export default function FacilitatorRoomPage() {
   const sendMessage = useAppStore((s) => s.sendMessage);
   const proposeOutcome = useAppStore((s) => s.proposeOutcome);
   const setOutcomeStatus = useAppStore((s) => s.setOutcomeStatus);
+  const reportSafety = useAppStore((s) => s.reportSafety);
 
   const [draft, setDraft] = useState("");
   const [outcomeDraft, setOutcomeDraft] = useState("");
@@ -43,6 +45,11 @@ export default function FacilitatorRoomPage() {
   const facParticipant = useMemo(
     () => participants.find((p) => p.isFacilitator),
     [participants]
+  );
+
+  const openSafety = useMemo(
+    () => safetyReports.filter((r) => r.status === "open"),
+    [safetyReports]
   );
 
   if (!user) {
@@ -121,12 +128,22 @@ export default function FacilitatorRoomPage() {
               <span className="text-[12px] text-ink-quiet">
                 Invite {room.inviteCode}
               </span>
+              {openSafety.length > 0 && (
+                <span className="rounded-full border border-attention/30 bg-attention-muted px-2.5 py-0.5 text-[11px] text-attention">
+                  {openSafety.length} open request{openSafety.length === 1 ? "" : "s"}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {!isClosed && (
               <>
-                <ProtectedPause disabled={busy} />
+                <ProtectedPause
+                  disabled={busy}
+                  onRequest={(intent, note) => {
+                    void reportSafety(room.id, intent, note);
+                  }}
+                />
                 <Button
                   variant="danger"
                   className="min-h-[36px] rounded-[10px] px-3.5 py-1.5 text-[12px]"
@@ -319,6 +336,34 @@ export default function FacilitatorRoomPage() {
                   <span className="text-ink">{p.displayRole}</span>
                   {p.isFacilitator && (
                     <span className="text-[11px] text-accent">Facilitator</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+            <h2 className="text-[13px] font-medium text-ink">Support requests</h2>
+            <p className="mt-1 text-[11px] text-ink-quiet">
+              From Protected Pause · fixture store in this demo
+            </p>
+            <ul className="mt-3 space-y-2">
+              {safetyReports.length === 0 && (
+                <li className="text-[13px] text-ink-quiet">None yet.</li>
+              )}
+              {safetyReports.map((r) => (
+                <li
+                  key={r.id}
+                  className="rounded-[10px] border border-[var(--border-subtle)] px-3 py-2 text-[12px]"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium capitalize text-ink">
+                      {r.category.replace("_", " ")}
+                    </span>
+                    <span className="text-ink-quiet">{r.status}</span>
+                  </div>
+                  {r.note && (
+                    <p className="mt-1 text-ink-secondary">{r.note}</p>
                   )}
                 </li>
               ))}
