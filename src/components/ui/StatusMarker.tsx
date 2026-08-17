@@ -10,12 +10,12 @@ type MarkerTone =
   | "consented";
 
 const TONE_STYLES: Record<MarkerTone, string> = {
-  neutral: "border-white/10 bg-white/[0.03] text-ink-secondary",
-  active: "border-accent/35 bg-accent-muted text-accent",
-  progress: "border-progress/35 bg-progress-muted text-progress",
-  attention: "border-attention/35 bg-attention-muted text-attention",
-  critical: "border-critical/35 bg-critical-muted text-critical",
-  consented: "border-consented/35 bg-consented-muted text-consented",
+  neutral: "border-border-default bg-surface-soft text-ink-secondary",
+  active: "border-accent/30 bg-accent-muted text-accent",
+  progress: "border-progress/30 bg-progress-muted text-progress",
+  attention: "border-attention/30 bg-attention-muted text-attention",
+  critical: "border-critical/30 bg-critical-muted text-critical",
+  consented: "border-consented/30 bg-consented-muted text-consented",
 };
 
 const ROOM_TONE: Record<RoomStatus, MarkerTone> = {
@@ -50,7 +50,7 @@ export function StatusMarker({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] font-medium tracking-wide",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] font-medium tracking-wide capitalize",
         TONE_STYLES[tone],
         className
       )}

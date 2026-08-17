@@ -14,15 +14,17 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-start justify-center rounded-lg border border-dashed border-white/10 bg-canvas/40 px-5 py-8",
+        "flex flex-col items-start justify-center rounded-[14px] border border-dashed border-border-default bg-surface-soft/60 px-5 py-10",
         className
       )}
     >
-      <h3 className="text-sm font-medium text-ink">{title}</h3>
+      <h3 className="text-[14px] font-medium tracking-tight text-ink">{title}</h3>
       {description && (
-        <p className="mt-1.5 max-w-prose text-sm text-ink-secondary">{description}</p>
+        <p className="mt-2 max-w-prose text-[14px] leading-relaxed text-ink-secondary">
+          {description}
+        </p>
       )}
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }

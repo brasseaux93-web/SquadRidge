@@ -4,11 +4,6 @@ import type { RoomStatus, SessionPhase } from "@/domain/types";
 import { SESSION_PHASES } from "@/domain/transitions";
 import { cn } from "@/lib/utils";
 
-/**
- * Dialogue Spine — a calm, ridge-like progression through facilitated stages.
- * Not a generic onboarding stepper. Communicates protected thresholds.
- */
-
 const STAGE_META: Record<
   SessionPhase | "ledger",
   { label: string; intent: string }
@@ -58,22 +53,24 @@ export function DialogueSpine({
     <nav
       aria-label="Dialogue progression"
       className={cn(
-        "rounded-lg border border-[var(--border-subtle)] bg-surface/60 px-4 py-3",
+        "rounded-[16px] border border-border-default bg-surface px-4 py-4 shadow-soft",
         className
       )}
     >
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <span className="section-label">Dialogue spine</span>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-quiet">
+          Dialogue spine
+        </span>
         {status === "closed" ? (
-          <span className="text-[0.7rem] text-progress">Room closed · chat purged</span>
+          <span className="text-[12px] text-progress">Room closed · dialogue cleared</span>
         ) : status === "safety_review" ? (
-          <span className="text-[0.7rem] text-critical">Safety review in progress</span>
+          <span className="text-[12px] text-critical">Safety review in progress</span>
         ) : status === "paused" ? (
-          <span className="text-[0.7rem] text-attention">Paused</span>
+          <span className="text-[12px] text-attention">Paused</span>
         ) : null}
       </div>
 
-      <ol className="relative flex flex-col gap-0 sm:flex-row sm:items-stretch sm:gap-0">
+      <ol className="relative flex flex-col gap-0 sm:flex-row sm:items-stretch">
         {stages.map((stage, i) => {
           const done = i < currentIdx;
           const active = i === currentIdx;
@@ -91,9 +88,13 @@ export function DialogueSpine({
                   className={cn(
                     "relative z-[1] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[0.65rem] font-semibold",
                     active &&
-                      "border-accent bg-accent-muted text-accent shadow-[0_0_0_3px_rgba(106,138,131,0.18)]",
-                    done && !active && "border-progress/50 bg-progress-muted text-progress",
-                    !done && !active && "border-white/10 bg-canvas text-ink-quiet"
+                      "border-accent bg-accent-muted text-accent shadow-focus",
+                    done &&
+                      !active &&
+                      "border-progress/40 bg-progress-muted text-progress",
+                    !done &&
+                      !active &&
+                      "border-border-default bg-surface-soft text-ink-quiet"
                   )}
                   aria-current={active ? "step" : undefined}
                 >
@@ -114,13 +115,13 @@ export function DialogueSpine({
                 <div className="sm:text-center">
                   <div
                     className={cn(
-                      "text-xs font-medium",
+                      "text-[12px] font-medium",
                       active ? "text-ink" : done ? "text-ink-secondary" : "text-ink-quiet"
                     )}
                   >
                     {meta.label}
                   </div>
-                  <div className="mt-0.5 hidden text-[0.65rem] text-ink-quiet sm:block">
+                  <div className="mt-0.5 hidden text-[11px] text-ink-quiet sm:block">
                     {meta.intent}
                   </div>
                 </div>
@@ -129,7 +130,7 @@ export function DialogueSpine({
                 <div
                   className={cn(
                     "absolute left-[13px] top-7 h-[calc(100%-0.5rem)] w-px sm:left-auto sm:right-0 sm:top-[13px] sm:h-px sm:w-[calc(100%-1.75rem)]",
-                    done ? "bg-progress/40" : "bg-white/8"
+                    done ? "bg-progress/35" : "bg-border-default"
                   )}
                   aria-hidden
                 />
@@ -139,10 +140,10 @@ export function DialogueSpine({
         })}
       </ol>
 
-      <p className="mt-4 border-t border-[var(--border-subtle)] pt-3 text-xs text-ink-secondary">
+      <p className="mt-4 border-t border-border-subtle pt-3 text-[13px] leading-relaxed text-ink-secondary">
         {status === "closed"
-          ? "Session dialogue has been removed. Only approved commitments remain on the ledger."
-          : `Current threshold: ${STAGE_META[current]?.label ?? current}. Facilitator may advance, pause, or revisit stages.`}
+          ? "Session dialogue has been removed. Only approved commitments remain."
+          : `Current stage: ${STAGE_META[current]?.label ?? current}. The facilitator may advance, pause, or revisit stages.`}
       </p>
     </nav>
   );
