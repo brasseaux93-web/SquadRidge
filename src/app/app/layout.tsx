@@ -7,9 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useAppStore } from "@/data/store";
 import { cn } from "@/lib/utils";
 
-const nav = [
-  { href: "/app", label: "Rooms" },
-];
+const nav = [{ href: "/app", label: "Rooms" }];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const user = useAppStore((s) => s.currentUser);
@@ -23,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return (
-      <div className="flex min-h-[50dvh] items-center justify-center text-ink-muted">
+      <div className="flex min-h-[50dvh] items-center justify-center text-ink-secondary">
         Checking session…
       </div>
     );
@@ -31,10 +29,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-white/5 bg-deep/90 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-canvas/90 backdrop-blur-md">
         <div className="container-app flex h-14 items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <Link href="/app" className="font-serif text-xl text-ink">
+            <Link href="/app" className="font-display text-xl tracking-tight text-ink">
               SquadRidge
             </Link>
             <nav className="flex gap-1">
@@ -45,8 +43,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "rounded-md px-3 py-1.5 text-sm transition-colors",
                     pathname === item.href || pathname.startsWith(item.href + "/")
-                      ? "bg-white/8 text-ink"
-                      : "text-ink-muted hover:text-ink"
+                      ? "bg-white/[0.06] text-ink"
+                      : "text-ink-secondary hover:text-ink"
                   )}
                 >
                   {item.label}
@@ -55,7 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-ink-muted sm:inline">
+            <span className="hidden text-ink-quiet sm:inline">
               {user.name} · {user.role}
             </span>
             <Button
