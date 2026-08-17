@@ -1,0 +1,190 @@
+import type {
+  Message,
+  OutcomeEntry,
+  Room,
+  RoomParticipant,
+  User,
+} from "@/domain/types";
+
+export const DEMO_USERS: User[] = [
+  {
+    id: "u-fac-1",
+    name: "Alex Rivera",
+    email: "alex.rivera@example.org",
+    organization: "Northbridge Ombuds Office",
+    role: "facilitator",
+  },
+  {
+    id: "u-p-1",
+    name: "Jordan Lee",
+    email: "jordan.lee@example.org",
+    organization: "Northbridge Engineering",
+    role: "participant",
+  },
+  {
+    id: "u-p-2",
+    name: "Sam Okonkwo",
+    email: "sam.okonkwo@example.org",
+    organization: "Northbridge Product",
+    role: "participant",
+  },
+];
+
+export const DEMO_ROOMS: Room[] = [
+  {
+    id: "room-1",
+    title: "Team alignment — Q4 technical standards",
+    status: "live",
+    phase: "dialogue",
+    organizationId: "org-1",
+    createdBy: "u-fac-1",
+    createdAt: "2026-08-15T14:00:00.000Z",
+    scheduledAt: "2026-08-16T18:00:00.000Z",
+    groundRules: [
+      "Speak from your experience; avoid characterizing others' intent.",
+      "One speaker at a time; facilitator may pause the room.",
+      "What is said in this room is not retained as a transcript after close.",
+      "Only facilitator-approved commitments move to the outcome ledger.",
+    ],
+    inviteCode: "ALIGN-Q4",
+  },
+  {
+    id: "room-2",
+    title: "Workplace mediation — project handoff",
+    status: "prepared",
+    phase: "opening",
+    organizationId: "org-1",
+    createdBy: "u-fac-1",
+    createdAt: "2026-08-14T10:00:00.000Z",
+    scheduledAt: "2026-08-18T16:00:00.000Z",
+    groundRules: [
+      "Confidential process under program guidelines.",
+      "Facilitator may open private caucuses.",
+    ],
+    inviteCode: "HANDOFF-18",
+  },
+  {
+    id: "room-3",
+    title: "Community dialogue — neighborhood resource center",
+    status: "closed",
+    phase: "closing",
+    organizationId: "org-1",
+    createdBy: "u-fac-1",
+    createdAt: "2026-08-01T09:00:00.000Z",
+    closedAt: "2026-08-01T11:30:00.000Z",
+    groundRules: ["Respectful turn-taking.", "Outcome-focused close."],
+    inviteCode: "COMM-01",
+  },
+];
+
+export const DEMO_PARTICIPANTS: RoomParticipant[] = [
+  {
+    id: "rp-1",
+    roomId: "room-1",
+    userId: "u-fac-1",
+    displayRole: "Facilitator",
+    isFacilitator: true,
+    joinedAt: "2026-08-16T17:55:00.000Z",
+  },
+  {
+    id: "rp-2",
+    roomId: "room-1",
+    userId: "u-p-1",
+    displayRole: "Engineer A",
+    isFacilitator: false,
+    joinedAt: "2026-08-16T17:58:00.000Z",
+  },
+  {
+    id: "rp-3",
+    roomId: "room-1",
+    userId: "u-p-2",
+    displayRole: "Manager B",
+    isFacilitator: false,
+    joinedAt: "2026-08-16T17:59:00.000Z",
+  },
+  {
+    id: "rp-4",
+    roomId: "room-2",
+    userId: "u-fac-1",
+    displayRole: "Facilitator",
+    isFacilitator: true,
+  },
+  {
+    id: "rp-5",
+    roomId: "room-2",
+    userId: "u-p-1",
+    displayRole: "Participant 1",
+    isFacilitator: false,
+  },
+  {
+    id: "rp-6",
+    roomId: "room-3",
+    userId: "u-fac-1",
+    displayRole: "Facilitator",
+    isFacilitator: true,
+  },
+];
+
+export const DEMO_MESSAGES: Message[] = [
+  {
+    id: "m-1",
+    roomId: "room-1",
+    participantId: "rp-2",
+    displayRole: "Engineer A",
+    body: "I felt the review process last month bypassed the technical standards we had agreed on.",
+    createdAt: "2026-08-16T18:05:00.000Z",
+    isFacilitator: false,
+  },
+  {
+    id: "m-2",
+    roomId: "room-1",
+    participantId: "rp-3",
+    displayRole: "Manager B",
+    body: "I hear that. The timeline pressure was real, and I own that the checklist did not get the attention it needed.",
+    createdAt: "2026-08-16T18:07:00.000Z",
+    isFacilitator: false,
+  },
+  {
+    id: "m-3",
+    roomId: "room-1",
+    participantId: "rp-1",
+    displayRole: "Facilitator",
+    body: "Thank you both. Let's name what would make the next cycle feel workable. We can capture concrete commitments when you're ready.",
+    createdAt: "2026-08-16T18:08:30.000Z",
+    isFacilitator: true,
+  },
+  {
+    id: "m-4",
+    roomId: "room-1",
+    participantId: "rp-2",
+    displayRole: "Engineer A",
+    body: "We need bi-weekly technical reviews before any production deployments.",
+    createdAt: "2026-08-16T18:10:00.000Z",
+    isFacilitator: false,
+  },
+];
+
+export const DEMO_OUTCOMES: OutcomeEntry[] = [
+  {
+    id: "o-1",
+    roomId: "room-1",
+    status: "proposed",
+    body: "Adopt updated Q4 deployment checklist and schedule bi-weekly technical reviews before production deployments.",
+    ownerLabel: "Manager B + Engineer A",
+    dueDate: "2026-09-01",
+    proposedBy: "rp-1",
+    createdAt: "2026-08-16T18:12:00.000Z",
+  },
+  {
+    id: "o-2",
+    roomId: "room-3",
+    status: "approved",
+    body: "Neighborhood resource center will publish monthly open-office hours and a single point of contact for scheduling conflicts.",
+    ownerLabel: "Community liaison",
+    dueDate: "2026-08-15",
+    proposedBy: "rp-6",
+    approvedBy: "u-fac-1",
+    approvedAt: "2026-08-01T11:20:00.000Z",
+    createdAt: "2026-08-01T11:10:00.000Z",
+  },
+];
