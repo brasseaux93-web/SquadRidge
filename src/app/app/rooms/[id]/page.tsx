@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { PrivacyLabel } from "@/components/ui/PrivacyLabel";
 import { RoomStatusMarker } from "@/components/ui/StatusMarker";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { EphemeralStateBadge } from "@/components/ui/EphemeralStateBadge";
 import { DialogueSpine } from "@/components/room/DialogueSpine";
 import { InformationLifecycle } from "@/components/room/InformationLifecycle";
 import { CommitmentCard } from "@/components/room/CommitmentCard";
@@ -16,6 +17,9 @@ import { useAppStore } from "@/data/store";
 import { SESSION_PHASES } from "@/domain/transitions";
 import type { SessionPhase } from "@/domain/types";
 import { formatDate } from "@/lib/utils";
+
+const fieldClass =
+  "w-full rounded-[12px] border border-border-default bg-canvas px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25";
 
 export default function FacilitatorRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -125,12 +129,16 @@ export default function FacilitatorRoomPage() {
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <RoomStatusMarker status={room.status} />
               <PrivacyLabel scope={room.isDemo ? "demo" : "room"} />
+              <EphemeralStateBadge
+                state={isClosed ? "retained" : "liveTemporary"}
+              />
               <span className="text-[12px] text-ink-quiet">
                 Invite {room.inviteCode}
               </span>
               {openSafety.length > 0 && (
                 <span className="rounded-full border border-attention/30 bg-attention-muted px-2.5 py-0.5 text-[11px] text-attention">
-                  {openSafety.length} open request{openSafety.length === 1 ? "" : "s"}
+                  {openSafety.length} open request
+                  {openSafety.length === 1 ? "" : "s"}
                 </span>
               )}
             </div>
@@ -174,8 +182,8 @@ export default function FacilitatorRoomPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="space-y-5">
-          <section className="flex min-h-[440px] flex-col rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)]">
-            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-5 py-3.5">
+          <section className="flex min-h-[440px] flex-col rounded-[16px] border border-border-default bg-surface shadow-soft">
+            <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
                 <h2 className="text-[14px] font-medium text-ink">Live dialogue</h2>
                 <p className="mt-0.5 text-[11px] text-ink-quiet">
@@ -192,7 +200,11 @@ export default function FacilitatorRoomPage() {
               <AnimatePresence initial={false}>
                 {messages.length === 0 ? (
                   <EmptyState
-                    title={isClosed ? "Dialogue ended with the room" : "Waiting for the first voice"}
+                    title={
+                      isClosed
+                        ? "Dialogue ended with the room"
+                        : "Waiting for the first voice"
+                    }
                     description={
                       isClosed
                         ? "Approved commitments remain. Live exchange is not retained."
@@ -231,7 +243,7 @@ export default function FacilitatorRoomPage() {
             </div>
 
             {!isClosed && (
-              <div className="border-t border-[var(--border-subtle)] px-5 py-4">
+              <div className="border-t border-border-subtle px-5 py-4">
                 <label className="sr-only" htmlFor="fac-msg">
                   Facilitator message
                 </label>
@@ -241,7 +253,7 @@ export default function FacilitatorRoomPage() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Guide the room…"
-                  className="w-full rounded-[12px] border border-white/10 bg-canvas px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                  className={fieldClass}
                 />
                 <div className="mt-3 flex justify-end">
                   <Button
@@ -258,7 +270,7 @@ export default function FacilitatorRoomPage() {
           </section>
 
           {!isClosed && (
-            <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-5">
+            <section className="rounded-[16px] border border-border-default bg-surface p-5 shadow-soft">
               <h2 className="text-[14px] font-medium text-ink">Propose a commitment</h2>
               <p className="mt-1 text-[12px] leading-relaxed text-ink-secondary">
                 Nothing is retained without your approval.
@@ -268,7 +280,7 @@ export default function FacilitatorRoomPage() {
                 value={outcomeDraft}
                 onChange={(e) => setOutcomeDraft(e.target.value)}
                 placeholder="We agree to…"
-                className="mt-3 w-full rounded-[12px] border border-white/10 bg-canvas px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink-quiet focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+                className={`mt-3 ${fieldClass}`}
               />
               <div className="mt-3 flex justify-end">
                 <Button
@@ -284,7 +296,7 @@ export default function FacilitatorRoomPage() {
           )}
 
           {isClosed && (
-            <section className="rounded-[16px] border border-progress/20 bg-progress-muted/25 p-5">
+            <section className="rounded-[16px] border border-progress/25 bg-progress-muted/30 p-5">
               <h2 className="text-[14px] font-medium text-ink">Room closed</h2>
               <p className="mt-2 text-[14px] leading-relaxed text-ink-secondary">
                 Closed {room.closedAt ? formatDate(room.closedAt) : ""}. Live dialogue
@@ -302,7 +314,7 @@ export default function FacilitatorRoomPage() {
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+          <section className="rounded-[16px] border border-border-default bg-surface p-4 shadow-soft">
             <h2 className="text-[13px] font-medium text-ink">Session phase</h2>
             <p className="mt-1 text-[11px] text-ink-quiet">Visible to everyone in the room</p>
             <div
@@ -316,10 +328,10 @@ export default function FacilitatorRoomPage() {
                   type="button"
                   disabled={isClosed || busy}
                   onClick={() => handlePhase(p)}
-                  className={`rounded-full border px-2.5 py-1 text-[11px] capitalize transition-colors disabled:opacity-40 ${
+                  className={`rounded-full border px-2.5 py-1 text-[11px] capitalize transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 ${
                     room.phase === p
                       ? "border-accent bg-accent-muted text-accent"
-                      : "border-white/10 text-ink-quiet hover:border-white/20 hover:text-ink-secondary"
+                      : "border-border-default text-ink-quiet hover:border-border-strong hover:text-ink-secondary"
                   }`}
                 >
                   {p}
@@ -328,7 +340,7 @@ export default function FacilitatorRoomPage() {
             </div>
           </section>
 
-          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+          <section className="rounded-[16px] border border-border-default bg-surface p-4 shadow-soft">
             <h2 className="text-[13px] font-medium text-ink">In the room</h2>
             <ul className="mt-3 space-y-2.5">
               {participants.map((p) => (
@@ -342,7 +354,7 @@ export default function FacilitatorRoomPage() {
             </ul>
           </section>
 
-          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+          <section className="rounded-[16px] border border-border-default bg-surface p-4 shadow-soft">
             <h2 className="text-[13px] font-medium text-ink">Support requests</h2>
             <p className="mt-1 text-[11px] text-ink-quiet">
               From Protected Pause · fixture store in this demo
@@ -354,7 +366,7 @@ export default function FacilitatorRoomPage() {
               {safetyReports.map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-[10px] border border-[var(--border-subtle)] px-3 py-2 text-[12px]"
+                  className="rounded-[10px] border border-border-subtle px-3 py-2 text-[12px]"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium capitalize text-ink">
@@ -370,7 +382,7 @@ export default function FacilitatorRoomPage() {
             </ul>
           </section>
 
-          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+          <section className="rounded-[16px] border border-border-default bg-surface p-4 shadow-soft">
             <h2 className="text-[13px] font-medium text-ink">Working agreements</h2>
             <ul className="mt-3 space-y-2 text-[13px] leading-relaxed text-ink-secondary">
               {room.groundRules.map((g) => (
@@ -385,7 +397,7 @@ export default function FacilitatorRoomPage() {
             </ul>
           </section>
 
-          <section className="rounded-[16px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-4">
+          <section className="rounded-[16px] border border-border-default bg-surface p-4 shadow-soft">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-[13px] font-medium text-ink">Commitments</h2>
               <Link
@@ -416,7 +428,7 @@ export default function FacilitatorRoomPage() {
       <AnimatePresence>
         {confirmClose && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -425,7 +437,7 @@ export default function FacilitatorRoomPage() {
             aria-labelledby="close-title"
           >
             <motion.div
-              className="w-full max-w-md rounded-[18px] border border-[var(--border-default)] bg-[var(--surface-raised)] p-6 shadow-lift"
+              className="w-full max-w-md rounded-[18px] border border-border-default bg-surface p-6 shadow-lift"
               initial={reduce ? false : { scale: 0.98, y: 6 }}
               animate={{ scale: 1, y: 0 }}
             >
