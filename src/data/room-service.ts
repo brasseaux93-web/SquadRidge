@@ -21,7 +21,11 @@ function newId(prefix: string) {
 }
 
 function isFacilitatorRole(user: User): boolean {
-  return user.role === "facilitator" || user.role === "admin";
+  return (
+    user.role === "facilitator" ||
+    user.role === "organization_admin" ||
+    user.role === "platform_admin"
+  );
 }
 
 /**
