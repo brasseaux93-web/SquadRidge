@@ -5,6 +5,7 @@ import type {
   OutcomeEntry,
   Room,
   RoomParticipant,
+  SafetyReport,
   User,
 } from "@/domain/types";
 import type { CloseRoomSummary, RoomRepository } from "./repository";
@@ -55,6 +56,19 @@ type DbOutcome = {
   created_at: string;
 };
 
+type DbSafety = {
+  id: string;
+  room_id: string;
+  reporter_membership_id: string | null;
+  category: SafetyReport["category"];
+  note: string;
+  status: SafetyReport["status"];
+  assigned_to: string | null;
+  resolved_at: string | null;
+  resolution_note: string | null;
+  created_at: string;
+};
+
 function mapRoom(r: DbRoom): Room {
   return {
     id: r.id,
@@ -66,6 +80,7 @@ function mapRoom(r: DbRoom): Room {
     createdBy: r.created_by ?? "",
     createdAt: r.created_at,
     closedAt: r.closed_at ?? undefined,
+    isDemo: false,
   };
 }
 
@@ -105,6 +120,21 @@ function mapOutcome(o: DbOutcome): OutcomeEntry {
     approvedAt: o.approved_at ?? undefined,
     notes: o.notes ?? undefined,
     createdAt: o.created_at,
+  };
+}
+
+function mapSafety(s: DbSafety): SafetyReport {
+  return {
+    id: s.id,
+    roomId: s.room_id,
+    reporterMembershipId: s.reporter_membership_id ?? undefined,
+    category: s.category,
+    note: s.note,
+    status: s.status,
+    assignedTo: s.assigned_to ?? undefined,
+    resolvedAt: s.resolved_at ?? undefined,
+    resolutionNote: s.resolution_note ?? undefined,
+    createdAt: s.created_at,
   };
 }
 
@@ -323,6 +353,32 @@ export class SupabaseRoomRepository implements RoomRepository {
       purgedMessageCount: row.purged_message_count,
       retainedApprovedOutcomeCount: row.retained_approved_outcome_count,
     };
+  }
+
+  async listSafetyReports(roomId: string): Promise<SafetyReport[]> {
+    const { data, error } = await this.client
+      .from("safety_reports")
+      .select("*")
+      .eq("room_id", roomId)
+      .order("created_at", { ascending: false });
+    if (error) return [];
+    return (data as DbSafety[]).map(mapSafety);
+  }
+
+  async addSafetyReport(report: SafetyReport): Promise<SafetyReport> {
+    const { data, error } = await this.client
+      .from("safety_reports")
+      .insert({
+        room_id: report.roomId,
+        reporter_membership_id: report.reporterMembershipId ?? null,
+        category: report.category,
+        note: report.note,
+        status: report.status,
+      })
+      .select("*")
+      .single();
+    if (error) throw mapRpcError(error);
+    return mapSafety(data as DbSafety);
   }
 
   async appendAudit(): Promise<void> {
