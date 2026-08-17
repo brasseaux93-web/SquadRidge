@@ -10,7 +10,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "glass rounded-xl p-5 shadow-soft",
+        "surface-raised rounded-xl p-5 shadow-soft",
         className
       )}
     >
