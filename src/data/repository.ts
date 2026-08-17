@@ -2,13 +2,19 @@ import type {
   AuditEvent,
   Message,
   OutcomeEntry,
-  OutcomeStatus,
   Room,
   RoomParticipant,
-  RoomStatus,
-  SessionPhase,
   User,
 } from "@/domain/types";
+
+export interface CloseRoomSummary {
+  roomId: string;
+  status: "closed";
+  alreadyClosed: boolean;
+  closedAt: string | null;
+  purgedMessageCount: number;
+  retainedApprovedOutcomeCount: number;
+}
 
 /**
  * Data-access boundary. UI and services depend on this interface,
@@ -41,6 +47,20 @@ export interface RoomRepository {
     >
   ): Promise<OutcomeEntry | null>;
 
+  /**
+   * Atomic approve — fixture applies domain rules; Supabase calls approve_outcome RPC.
+   * Caller must still enforce facilitator checks in RoomService for fixture consistency.
+   */
+  approveOutcomeAtomic(
+    outcomeId: string,
+    actorId: string
+  ): Promise<OutcomeEntry>;
+
+  /**
+   * Atomic close + purge — fixture or close_room RPC.
+   */
+  closeAndPurge(roomId: string, actorId: string): Promise<CloseRoomSummary>;
+
   appendAudit(event: AuditEvent): Promise<void>;
   listAudit(roomId?: string): Promise<AuditEvent[]>;
 }
@@ -53,4 +73,18 @@ export function getConfiguredAdapterName(): DataAdapterName {
     (typeof process !== "undefined" && process.env.DATA_ADAPTER) ||
     "fixture";
   return raw === "supabase" ? "supabase" : "fixture";
+}
+
+export function requireSupabasePublicEnv(): {
+  url: string;
+  anonKey: string;
+} {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) {
+    throw new Error(
+      "Supabase adapter requires NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Fixture mode remains available with NEXT_PUBLIC_DATA_ADAPTER=fixture."
+    );
+  }
+  return { url, anonKey };
 }

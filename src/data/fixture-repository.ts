@@ -6,7 +6,7 @@ import type {
   RoomParticipant,
   User,
 } from "@/domain/types";
-import type { RoomRepository } from "./repository";
+import type { CloseRoomSummary, RoomRepository } from "./repository";
 import {
   DEMO_MESSAGES,
   DEMO_OUTCOMES,
@@ -15,7 +15,6 @@ import {
   DEMO_USERS,
 } from "./fixtures";
 
-/** Mutable in-memory state for the fixture adapter (testable, resettable). */
 export interface FixtureState {
   users: User[];
   rooms: Room[];
@@ -115,6 +114,68 @@ export class FixtureRoomRepository implements RoomRepository {
     if (idx < 0) return null;
     this.state.outcomes[idx] = { ...this.state.outcomes[idx], ...patch };
     return this.state.outcomes[idx];
+  }
+
+  async approveOutcomeAtomic(outcomeId: string, actorId: string) {
+    const o = await this.getOutcome(outcomeId);
+    if (!o) throw new Error("outcome_not_found");
+    if (!['proposed', 'under_review', 'revised'].includes(o.status)) {
+      throw new Error("outcome_not_approvable");
+    }
+    const room = await this.getRoom(o.roomId);
+    if (!room || room.status === "closed") throw new Error("room_closed");
+    const updated = await this.updateOutcome(outcomeId, {
+      status: "approved",
+      approvedBy: actorId,
+      approvedAt: new Date().toISOString(),
+    });
+    if (!updated) throw new Error("outcome_not_found");
+    await this.appendAudit({
+      id: `aud-${crypto.randomUUID().slice(0, 8)}`,
+      roomId: o.roomId,
+      actorId,
+      action: "outcome.approved",
+      metadata: { outcomeId },
+      createdAt: new Date().toISOString(),
+    });
+    return updated;
+  }
+
+  async closeAndPurge(roomId: string, actorId: string): Promise<CloseRoomSummary> {
+    const room = await this.getRoom(roomId);
+    if (!room) throw new Error("room_not_found");
+
+    let alreadyClosed = room.status === "closed";
+    if (!alreadyClosed) {
+      await this.updateRoom(roomId, {
+        status: "closed",
+        phase: "closing",
+        closedAt: new Date().toISOString(),
+      });
+      await this.appendAudit({
+        id: `aud-${crypto.randomUUID().slice(0, 8)}`,
+        roomId,
+        actorId,
+        action: "room.closed",
+        metadata: { purged: true },
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    const purged = await this.purgeMessages(roomId);
+    const approved = (await this.listOutcomes(roomId)).filter(
+      (o) => o.status === "approved"
+    ).length;
+    const closed = await this.getRoom(roomId);
+
+    return {
+      roomId,
+      status: "closed",
+      alreadyClosed,
+      closedAt: closed?.closedAt ?? null,
+      purgedMessageCount: purged,
+      retainedApprovedOutcomeCount: approved,
+    };
   }
 
   async appendAudit(event: AuditEvent) {
