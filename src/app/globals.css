@@ -129,11 +129,19 @@ html {
 
 body {
   background-color: var(--canvas);
-  background-image: radial-gradient(
-    ellipse 70% 45% at 50% -10%,
-    rgba(47, 95, 86, 0.05),
-    transparent 70%
-  );
+  background-image:
+    /* Soft top wash */
+    radial-gradient(
+      ellipse 80% 50% at 50% -15%,
+      rgba(47, 95, 86, 0.07),
+      transparent 65%
+    ),
+    /* Bottom teal glow — more visible */
+    radial-gradient(
+      ellipse 90% 55% at 50% 115%,
+      rgba(47, 95, 86, 0.11),
+      transparent 60%
+    );
   background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
