@@ -1,14 +1,16 @@
 "use client";
 
+/**
+ * Single global prototype disclosure. Do not duplicate this copy on page bodies.
+ */
 export function DemoBanner() {
   return (
     <div
       role="status"
-      className="border-b border-border-subtle bg-surface-soft px-4 py-2 text-center text-[11px] leading-relaxed tracking-wide text-ink-quiet"
+      className="border-b border-border-subtle bg-surface-soft px-4 py-2 text-center text-[12px] leading-relaxed text-ink-quiet"
     >
-      <span className="font-medium text-ink-secondary">Prototype</span>
-      <span className="mx-2 opacity-40">·</span>
-      Sample data only. Not a production identity or encryption system.
+      Prototype preview - sample data only. Production identity verification and
+      encryption are not active.
     </div>
   );
 }

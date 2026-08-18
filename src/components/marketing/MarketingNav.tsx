@@ -6,25 +6,17 @@ import { useState } from "react";
 const links = [
   { href: "#how", label: "How it works" },
   { href: "#privacy", label: "Privacy" },
-  { href: "#audience", label: "Who it’s for" },
+  { href: "#audience", label: "Who it is for" },
+  { href: "#pilot", label: "Pilots" },
 ];
 
 export function MarketingNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header
-      className="sticky top-0 z-40 border-b backdrop-blur-md"
-      style={{
-        background: "rgba(247, 247, 244, 0.88)",
-        borderColor: "var(--m-border)",
-      }}
-    >
+    <header className="sticky top-0 z-40 border-b border-border-subtle bg-[rgba(247,247,244,0.88)] backdrop-blur-md">
       <div className="container-marketing flex h-14 items-center justify-between gap-4">
-        <Link
-          href="/"
-          className="text-[17px] font-semibold tracking-tight text-[var(--m-ink)]"
-        >
+        <Link href="/" className="text-[17px] font-semibold tracking-tight text-ink">
           SquadRidge
         </Link>
 
@@ -33,20 +25,22 @@ export function MarketingNav() {
             <a
               key={l.href}
               href={l.href}
-              className="text-[14px] text-[var(--m-ink-secondary)] transition-colors hover:text-[var(--m-ink)]"
+              className="text-[14px] text-ink-secondary transition-colors hover:text-ink"
             >
               {l.label}
             </a>
           ))}
-          <Link href="/enter" className="btn-m-primary min-h-[38px] px-4 text-[14px]">
+          <Link
+            href="/enter"
+            className="btn-m-primary min-h-[38px] px-4 text-[14px] shadow-soft"
+          >
             Explore the demo
           </Link>
         </nav>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border md:hidden"
-          style={{ borderColor: "var(--m-border)" }}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-border-default md:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -73,21 +67,17 @@ export function MarketingNav() {
         </button>
       </div>
 
-      {open && (
+      {open ? (
         <div
           id="mobile-nav"
-          className="border-t px-5 py-4 md:hidden"
-          style={{
-            borderColor: "var(--m-border)",
-            background: "var(--m-canvas)",
-          }}
+          className="border-t border-border-subtle bg-canvas px-5 py-4 md:hidden"
         >
           <nav className="flex flex-col gap-1" aria-label="Mobile">
             {links.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
-                className="rounded-[10px] px-3 py-2.5 text-[15px] text-[var(--m-ink)]"
+                className="rounded-[10px] px-3 py-2.5 text-[15px] text-ink"
                 onClick={() => setOpen(false)}
               >
                 {l.label}
@@ -102,7 +92,7 @@ export function MarketingNav() {
             </Link>
           </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

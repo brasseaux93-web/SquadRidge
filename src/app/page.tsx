@@ -54,91 +54,87 @@ const audiences = [
   {
     title: "Mediators",
     body: "Hold structured sessions where roles stay clear and only agreed next steps are kept.",
+    highlight: false,
   },
   {
     title: "Ombuds teams",
     body: "Offer a calmer digital room for sensitive workplace dialogue without a permanent transcript by default.",
+    highlight: false,
   },
   {
     title: "Employee relations",
     body: "Support difficult conversations with facilitation tools and explicit commitment records.",
+    highlight: false,
   },
   {
     title: "Institutional pilot partners",
-    body: "Evaluate a bounded process for facilitated dialogue before wider deployment.",
+    body: "Evaluate a bounded, facilitator-led dialogue process before considering wider deployment.",
+    highlight: true,
   },
+];
+
+const pilotTrust = [
+  "Bounded pilot scope",
+  "Facilitator-led process",
+  "No production security claims",
 ];
 
 export default function HomePage() {
   return (
     <div className="theme-marketing">
+      {/* Prototype disclosure is global via DemoBanner in root layout */}
       <MarketingNav />
-
-      <p
-        className="border-b px-5 py-2 text-center text-[12px] leading-relaxed text-[var(--m-ink-quiet)] sm:px-8"
-        style={{ borderColor: "var(--m-border)" }}
-      >
-        Prototype preview — uses sample data. Production identity verification and
-        encryption are not active.
-      </p>
 
       <main>
         {/* Hero */}
         <section className="container-marketing grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
           <div>
-            <p className="text-[13px] font-medium tracking-wide text-[var(--m-accent)]">
+            <p className="text-[13px] font-medium tracking-wide text-accent">
               For conversations that need care
             </p>
-            <h1 className="mt-4 text-[42px] font-semibold leading-[1.05] tracking-[-0.03em] text-[var(--m-ink)] sm:text-[56px] lg:text-[64px]">
+            <h1 className="mt-4 text-[42px] font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[56px] lg:text-[64px]">
               Difficult conversations deserve better infrastructure.
             </h1>
-            <p className="mt-5 max-w-[34rem] text-[17px] leading-[1.55] text-[var(--m-ink-secondary)] sm:text-[18px]">
-              SquadRidge gives facilitators a private, structured space for
-              dialogue—and a clear path to the commitments people choose to carry
-              forward.
+            <p className="mt-5 max-w-[34rem] text-[17px] leading-[1.55] text-ink-secondary sm:text-[18px]">
+              SquadRidge gives facilitators a structured space for dialogue, and a
+              deliberate path to the commitments people choose to carry forward.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/enter" className="btn-m-primary">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/enter" className="btn-m-primary shadow-soft">
                 Explore the demo
               </Link>
-              <a href="#how" className="btn-m-secondary">
-                How it works
+              <a
+                href="#pilot"
+                className="inline-flex min-h-[44px] items-center px-3 text-[15px] font-medium text-ink-secondary transition-colors hover:text-ink"
+              >
+                Discuss a pilot
               </a>
             </div>
           </div>
 
-          <div className="lg:justify-self-end lg:w-full lg:max-w-[440px]">
+          <div className="lg:w-full lg:max-w-[440px] lg:justify-self-end">
             <ProductMockup />
           </div>
         </section>
 
         {/* Benefits */}
-        <section
-          id="how"
-          className="border-t py-16 sm:py-20"
-          style={{ borderColor: "var(--m-border)" }}
-        >
+        <section id="how" className="border-t border-border-subtle py-16 sm:py-20">
           <div className="container-marketing">
-            <p className="text-[13px] font-medium text-[var(--m-ink-quiet)]">
+            <p className="text-[13px] font-medium text-ink-quiet">
               Designed for the whole conversation
             </p>
-            <h2 className="mt-3 max-w-[28rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+            <h2 className="mt-3 max-w-[28rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink sm:text-[40px]">
               From a hard conversation to a shared next step.
             </h2>
 
             <ul className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-8">
               {benefits.map((item) => (
                 <li key={item.title}>
-                  <div
-                    className="mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] text-[var(--m-accent)]"
-                    style={{ background: "var(--m-accent-soft)" }}
-                  >
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] bg-accent-muted text-accent">
                     {item.icon}
                   </div>
-                  <h3 className="text-[17px] font-semibold text-[var(--m-ink)]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--m-ink-secondary)]">
+                  <h3 className="text-[17px] font-semibold text-ink">{item.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-ink-secondary">
                     {item.body}
                   </p>
                 </li>
@@ -148,86 +144,69 @@ export default function HomePage() {
         </section>
 
         {/* Privacy */}
-        <section
-          id="privacy"
-          className="border-t py-16 sm:py-20"
-          style={{ borderColor: "var(--m-border)" }}
-        >
+        <section id="privacy" className="border-t border-border-subtle py-16 sm:py-20">
           <div className="container-marketing max-w-[720px]">
-            <p className="text-[13px] font-medium text-[var(--m-ink-quiet)]">
-              Privacy by design
-            </p>
-            <h2 className="mt-3 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+            <p className="text-[13px] font-medium text-ink-quiet">Privacy by design</p>
+            <h2 className="mt-3 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink sm:text-[40px]">
               The conversation is not the record.
             </h2>
-            <p className="mt-4 text-[17px] leading-relaxed text-[var(--m-ink-secondary)]">
+            <p className="mt-4 text-[17px] leading-relaxed text-ink-secondary">
               SquadRidge separates a live, facilitator-led session from the
               commitments people explicitly choose to retain.
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div
-                className="rounded-[18px] border p-5"
-                style={{
-                  borderColor: "var(--m-border)",
-                  background: "var(--m-surface)",
-                }}
-              >
-                <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--m-ink-quiet)]">
+              <div className="rounded-[18px] border border-border-default bg-surface p-6 shadow-soft">
+                <p className="text-[12px] font-medium uppercase tracking-wide text-ink-quiet">
                   Inside the room
                 </p>
-                <p className="mt-3 text-[15px] leading-relaxed text-[var(--m-ink)]">
+                <p className="mt-3 text-[15px] leading-relaxed text-ink">
                   Temporary live dialogue, visible to current participants while the
                   session is open.
                 </p>
               </div>
-              <div
-                className="rounded-[18px] border p-5"
-                style={{
-                  borderColor: "var(--m-border)",
-                  background: "var(--m-accent-soft)",
-                }}
-              >
-                <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--m-accent)]">
+              <div className="rounded-[18px] border border-accent/20 bg-accent-muted p-6">
+                <p className="text-[12px] font-medium uppercase tracking-wide text-accent">
                   After the room
                 </p>
-                <p className="mt-3 text-[15px] leading-relaxed text-[var(--m-ink)]">
-                  Approved commitments only—what the group explicitly chooses to keep.
+                <p className="mt-3 text-[15px] leading-relaxed text-ink">
+                  Approved commitments only. What the group explicitly chooses to keep.
                 </p>
               </div>
             </div>
 
-            <p className="mt-6 text-[13px] leading-relaxed text-[var(--m-ink-quiet)]">
-              In this preview, data is fixture-only. Production privacy controls are
-              not yet active.
+            <p className="mt-6 text-[13px] leading-relaxed text-ink-quiet">
+              This preview uses sample data. Production safeguards are being designed
+              separately from this prototype.
             </p>
           </div>
         </section>
 
         {/* Audience */}
-        <section
-          id="audience"
-          className="border-t py-16 sm:py-20"
-          style={{ borderColor: "var(--m-border)" }}
-        >
+        <section id="audience" className="border-t border-border-subtle py-16 sm:py-20">
           <div className="container-marketing">
-            <h2 className="max-w-[24rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+            <h2 className="max-w-[24rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink sm:text-[40px]">
               Built for people who hold hard conversations.
             </h2>
             <ul className="mt-12 grid gap-6 sm:grid-cols-2">
               {audiences.map((a) => (
                 <li
                   key={a.title}
-                  className="rounded-[18px] border p-6"
-                  style={{
-                    borderColor: "var(--m-border)",
-                    background: "var(--m-surface)",
-                  }}
+                  className={
+                    a.highlight
+                      ? "rounded-[18px] border border-accent/25 bg-surface p-6 shadow-soft ring-1 ring-accent/10"
+                      : "rounded-[18px] border border-border-default bg-surface p-6"
+                  }
                 >
-                  <h3 className="text-[16px] font-semibold text-[var(--m-ink)]">
-                    {a.title}
-                  </h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--m-ink-secondary)]">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-[16px] font-semibold text-ink">{a.title}</h3>
+                    {a.highlight ? (
+                      <span className="shrink-0 rounded-full bg-accent-muted px-2.5 py-0.5 text-[11px] font-medium text-accent">
+                        Early partners
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-2 text-[15px] leading-relaxed text-ink-secondary">
                     {a.body}
                   </p>
                 </li>
@@ -236,21 +215,60 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Pilot interest */}
+        <section id="pilot" className="border-t border-border-subtle py-16 sm:py-20">
+          <div className="container-marketing">
+            <div className="rounded-[18px] border border-border-default bg-surface px-6 py-10 shadow-soft sm:px-10">
+              <p className="text-[13px] font-medium text-accent">For early partners</p>
+              <h2 className="mt-3 max-w-[28rem] text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink sm:text-[36px]">
+                Help shape a better infrastructure for hard conversations.
+              </h2>
+              <p className="mt-4 max-w-[36rem] text-[16px] leading-relaxed text-ink-secondary">
+                SquadRidge is seeking a small number of institutional pilot partners to
+                evaluate structured, facilitator-led dialogue in a bounded setting.
+                Early conversations are exploratory and do not require a production
+                deployment.
+              </p>
+
+              <ul className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-6">
+                {pilotTrust.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-center gap-2 text-[14px] text-ink-secondary"
+                  >
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                      aria-hidden
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8">
+                <a
+                  href="mailto:pilots@squadridge.example?subject=Pilot%20discussion%20request"
+                  className="btn-m-primary shadow-soft"
+                >
+                  Discuss a pilot
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Closing CTA */}
-        <section
-          className="border-t py-16 sm:py-20"
-          style={{ borderColor: "var(--m-border)" }}
-        >
+        <section className="border-t border-border-subtle py-16 sm:py-20">
           <div className="container-marketing text-center">
-            <h2 className="mx-auto max-w-[28rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--m-ink)] sm:text-[40px]">
+            <h2 className="mx-auto max-w-[28rem] text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink sm:text-[40px]">
               See what a more deliberate conversation space feels like.
             </h2>
-            <p className="mx-auto mt-4 max-w-[32rem] text-[17px] leading-relaxed text-[var(--m-ink-secondary)]">
-              Walk through a guided room, role-based dialogue, commitment approval,
-              and a clear room close using sample data.
+            <p className="mx-auto mt-4 max-w-[32rem] text-[17px] leading-relaxed text-ink-secondary">
+              Walk through a guided room, role-based dialogue, commitment approval, and
+              a clear room close using sample data.
             </p>
             <div className="mt-8">
-              <Link href="/enter" className="btn-m-primary">
+              <Link href="/enter" className="btn-m-primary shadow-soft">
                 Explore the demo
               </Link>
             </div>
@@ -258,28 +276,25 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer
-        className="border-t py-10"
-        style={{ borderColor: "var(--m-border)", background: "var(--m-surface-soft)" }}
-      >
+      <footer className="border-t border-border-subtle bg-surface-soft py-10">
         <div className="container-marketing flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-[16px] font-semibold text-[var(--m-ink)]">SquadRidge</p>
-            <p className="mt-1 max-w-sm text-[14px] leading-relaxed text-[var(--m-ink-secondary)]">
+            <p className="text-[16px] font-semibold text-ink">SquadRidge</p>
+            <p className="mt-1 max-w-sm text-[14px] leading-relaxed text-ink-secondary">
               A private space for facilitated dialogue and deliberate next steps.
             </p>
-            <p className="mt-3 text-[12px] text-[var(--m-ink-quiet)]">
+            <p className="mt-3 text-[12px] text-ink-quiet">
               Prototype preview · sample data only
             </p>
           </div>
-          <div className="flex flex-wrap gap-6 text-[14px] text-[var(--m-ink-secondary)]">
-            <Link href="/privacy" className="hover:text-[var(--m-ink)] transition-colors">
+          <div className="flex flex-wrap gap-6 text-[14px] text-ink-secondary">
+            <Link href="/privacy" className="transition-colors hover:text-ink">
               Privacy
             </Link>
-            <Link href="/security" className="hover:text-[var(--m-ink)] transition-colors">
+            <Link href="/security" className="transition-colors hover:text-ink">
               Security overview
             </Link>
-            <Link href="/enter" className="hover:text-[var(--m-ink)] transition-colors">
+            <Link href="/enter" className="transition-colors hover:text-ink">
               Demo
             </Link>
           </div>
