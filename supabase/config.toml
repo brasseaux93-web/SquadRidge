@@ -2,7 +2,7 @@
 # Start: npx supabase start
 # Reset + migrate + seed: npx supabase db reset
 
-project_id = "squadridge-local"
+project_id = "squadridge"
 
 [api]
 enabled = true
